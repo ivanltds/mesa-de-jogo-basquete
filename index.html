@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIBA Digital Scoreboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+    <div id="app">
+        <div id="toast-container"></div>
+
+        <div id="dev-tools">
+            <button id="mock-data-btn" class="btn btn-secondary btn-sm">TIMES DE TESTE</button>
+            <button id="reset-app-btn" class="btn btn-danger btn-sm">RESET</button>
+        </div>
+
+        <!-- Tela 1: Configuração -->
+        <section id="setup-screen" class="screen active">
+            <div class="setup-container">
+                <header class="setup-hero">
+                    <div class="badge-fiba">FIBA APPROVED</div>
+                    <h1>DIGITAL <span>SCOREBOARD</span></h1>
+                    <p>Elite Match Management System</p>
+                </header>
+
+                <div class="setup-quick-actions">
+                    <button class="btn-soundboard-hero" onclick="window.openSoundboard()">
+                        <div class="btn-icon">🎚️</div>
+                        <div class="btn-text">
+                            <span>MODO DJ</span>
+                            <strong>MESA DE SOM ARENA</strong>
+                        </div>
+                    </button>
+                </div>
+                
+                <main class="setup-grid">
+                    <!-- Configuração da Competição -->
+                    <div class="setup-card glass-card full-width">
+                        <div class="form-group-row">
+                            <div class="input-wrap">
+                                <label>COMPETIÇÃO</label>
+                                <input type="text" id="input-competition" placeholder="Ex: NBB 2024" value="NBB 2024">
+                            </div>
+                            <button class="btn-start-hero" id="start-match-btn">INICIAR PARTIDA ➔</button>
+                        </div>
+                    </div>
+
+                    <div class="teams-setup">
+                        <div class="team-card" id="home-setup">
+                            <div class="team-header">
+                                <input type="text" id="home-name" placeholder="Time Casa" class="h3-input" value="FLAMENGO">
+                                <input type="color" id="home-color" value="#ff6b00">
+                            </div>
+                            <div class="add-player-box">
+                                <input type="text" id="home-p-num" placeholder="#" class="input-num">
+                                <input type="text" id="home-p-name" placeholder="Nome" class="input-name">
+                                <button class="btn btn-primary btn-sm" id="btn-add-home-p">+</button>
+                            </div>
+                            <div class="player-list-container">
+                                <div class="player-list" id="home-players-list"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="team-card" id="away-setup">
+                            <div class="team-header">
+                                <input type="text" id="away-name" placeholder="Time Visitante" class="h3-input" value="FRANCA">
+                                <input type="color" id="away-color" value="#2196f3">
+                            </div>
+                            <div class="add-player-box">
+                                <input type="text" id="away-p-num" placeholder="#" class="input-num">
+                                <input type="text" id="away-p-name" placeholder="Nome" class="input-name">
+                                <button class="btn btn-primary btn-sm" id="btn-add-away-p">+</button>
+                            </div>
+                            <div class="player-list-container">
+                                <div class="player-list" id="away-players-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </section>
+
+        <!-- Tela 2: Mesa de Jogo -->
+        <section id="match-screen" class="screen">
+            <div class="match-layout">
+                <div class="match-grid-top">
+                    <!-- Time Casa -->
+                    <div class="team-panel home">
+                        <div class="team-header-match">
+                            <h2 id="display-home-name">TIME A</h2>
+                            <button class="btn btn-warning btn-xs" onclick="window.openSubModal('home')">SUB</button>
+                        </div>
+                        <div class="score" id="home-score" style="color: var(--home-color)">0</div>
+                        
+                        <div class="team-status-bar">
+                            <div class="bonus-indicator" id="home-bonus">BONUS</div>
+                            <div class="timeout-dots" id="home-timeouts">
+                                <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                            </div>
+                            <button class="btn btn-warning btn-xs" onclick="window.addTimeout('home')">T</button>
+                        </div>
+                        <div class="team-fouls">FALTAS: <span id="fouls-home">0</span></div>
+                        <div class="active-players" id="home-active-players"></div>
+                    </div>
+
+                    <!-- Centro: Cronômetros e Histórico -->
+                    <div class="center-panel">
+                        <div class="clocks-container">
+                            <div class="period-badge">PERÍODO <span id="display-period">1</span></div>
+                            <div id="game-clock" class="main-clock">10:00</div>
+                            <div id="shot-clock" class="shot-clock">24</div>
+                            
+                            <div class="time-controls">
+                                <button class="btn btn-primary btn-xl pulse-attention" id="toggle-clock-btn">START</button>
+                                <div style="display: flex; gap: 10px; width: 100%;">
+                                    <button class="btn btn-secondary btn-lg" id="reset-24-btn">🔄 POSSE (24s)</button>
+                                    <button class="btn btn-secondary btn-lg" id="reset-14-btn">14s</button>
+                                </div>
+                                <div style="display: flex; gap: 10px; width: 100%; align-items: center; justify-content: center; margin-top: 10px;">
+                                    <button class="btn btn-warning btn-sm" id="fast-forward-btn">FFW 10s</button>
+                                    <button class="btn btn-mystery" id="mystery-btn" title="Coisas Esquisitas">?</button>
+                                    <button class="btn btn-fun" id="fun-btn" title="Diversão">🎉</button>
+                                    <button class="btn btn-nba" id="nba-btn" title="NBA">🏀</button>
+                                    <button class="btn btn-torcida" id="torcida-btn" title="Torcida">🙌</button>
+                                    <button class="btn btn-musica" id="musica-btn" title="Musicas">🎵</button>
+                                    <button class="btn btn-danger btn-sm" id="skip-audio-btn" title="Pular Áudio">⏭️</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="center-bottom-row">
+                            <div class="central-log">
+                                <h3>HISTÓRICO RECENTE</h3>
+                                <div id="event-log" class="premium-log"></div>
+                            </div>
+
+                            <div class="sound-queue-panel">
+                                <h3>🔊 FILA DE ÁUDIO</h3>
+                                <div id="audio-queue" class="queue-list"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Time Visitante -->
+                    <div class="team-panel away">
+                        <div class="team-header-match">
+                            <button class="btn btn-warning btn-xs" onclick="window.openSubModal('away')">SUB</button>
+                            <h2 id="display-away-name">TIME B</h2>
+                        </div>
+                        <div class="score" id="away-score" style="color: var(--away-color)">0</div>
+
+                        <div class="team-status-bar">
+                            <button class="btn btn-warning btn-xs" onclick="window.addTimeout('away')">T</button>
+                            <div class="timeout-dots" id="away-timeouts">
+                                <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                            </div>
+                            <div class="bonus-indicator" id="away-bonus">BONUS</div>
+                        </div>
+                        <div class="team-fouls">FALTAS: <span id="fouls-away">0</span></div>
+                        <div class="active-players" id="away-active-players"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Modals e Feedbacks -->
+        <div id="sub-modal" class="modal">
+            <div class="modal-content">
+                <h2 id="sub-modal-title">Substituição</h2>
+                <div class="sub-grid">
+                    <div class="sub-column">
+                        <h3>Em Quadra</h3>
+                        <div id="players-in-court" class="sub-list"></div>
+                    </div>
+                    <div class="sub-column">
+                        <h3>No Banco</h3>
+                        <div id="players-on-bench" class="sub-list"></div>
+                    </div>
+                </div>
+                <button class="btn btn-secondary btn-lg" id="close-sub-modal">FECHAR</button>
+            </div>
+        </div>
+
+        <section id="report-screen" class="screen">
+            <div id="final-report"></div>
+        </section>
+        
+        <!-- Tela 3: Mesa de Som Isolada (DJ MIXER) -->
+        <section id="soundboard-screen" class="screen">
+            <div class="dj-console">
+                <header class="dj-header">
+                    <div class="dj-logo">ARENA <span>MIXER</span></div>
+                    <div class="dj-status">READY // MASTER OUTPUT</div>
+                    <button class="btn-dj-exit" onclick="window.closeSoundboard()">✕ CLOSE CONSOLE</button>
+                </header>
+
+                <div class="dj-main-layout">
+                    <!-- Esquerda: Pads de Som -->
+                    <div class="dj-pads-section" id="dj-pads-grid">
+                        <!-- Gerado via JS: Categorias e Pads -->
+                    </div>
+
+                    <!-- Direita: Fila e Master -->
+                    <aside class="dj-side-panel">
+                        <div class="dj-queue-container">
+                            <h3><span class="pulse-red">●</span> LIVE QUEUE</h3>
+                            <div id="dj-audio-queue" class="dj-queue-list">
+                                <!-- Sincronizado com a fila principal -->
+                            </div>
+                        </div>
+
+                        <div class="dj-master-controls">
+                            <button class="btn-dj-skip" onclick="SoundManager.skip()">SKIP TRACK ⏭️</button>
+                            <div class="dj-vumeter">
+                                <div class="vu-bar bar-1"></div><div class="vu-bar bar-2"></div>
+                                <div class="vu-bar bar-3"></div><div class="vu-bar bar-4"></div>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <audio id="buzzer-sound" src="assets/buzzer.mp3" preload="auto"></audio>
+    <script type="module" src="main.js"></script>
+</body>
+</html>
