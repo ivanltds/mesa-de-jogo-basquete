@@ -21,7 +21,7 @@ const SoundManager = {
         nba: ["nba (2).mp3", "nba (3).mp3", "nba (4).mp3", "nba(1).mp3", "nba.mp3"],
         torcida: ["torcida (2).mp3", "torcida (3).mp3", "torcida.mp3"],
         buzina: ["Buzina.mp3"],
-        musica: ["musica- Bow Basketball.mp3", "musica- Can't Hold Us.mp3", "musica- I Believe I Can Fly.mp3", "musica- O JOGO Ã‰ SÃ‰RIO.mp3", "musica-Hino Nacional Brasileiro.mp3"]
+        musica: ["musica- Bow Basketball.mp3", "musica- Can't Hold Us.mp3", "musica- I Believe I Can Fly.mp3", "musica- O JOGO É SÉRIO.mp3", "musica-Hino Nacional Brasileiro.mp3"]
     },
     
     play(category) {
@@ -62,7 +62,7 @@ const SoundManager = {
 
     skip() {
         if (this.queue.length > 0) {
-            notify("Ãudio pulado");
+            notify("Áudio pulado");
             this.queue.shift();
             UIManager.renderSoundQueue();
             this.processQueue();
@@ -77,9 +77,9 @@ const SoundManager = {
 
 const GameEngine = {
     addPlayer(teamKey, name, number) {
-        if (!name || !number) return notify("Preencha nome e nÃºmero!");
+        if (!name || !number) return notify("Preencha nome e número!");
         const team = gameState.teams[teamKey];
-        if (team.players.find(p => p.number === number)) return notify("NÃºmero jÃ¡ existe!");
+        if (team.players.find(p => p.number === number)) return notify("Número já existe!");
         team.players.push({ name, number, points: 0, fouls: 0, inCourt: false });
         UIManager.renderPlayerList(teamKey);
         document.getElementById(`${teamKey}-p-num`).value = '';
@@ -88,10 +88,10 @@ const GameEngine = {
     },
 
     logEvent(message, type = 'info', teamKey = null, playerNum = null, value = 0, pInNum = null, pOutNum = null) {
-        let icon = "ðŸ“";
-        if (message.includes("pts")) icon = "ðŸ€";
-        if (message.includes("Falta")) icon = "âš ï¸";
-        if (message.includes("SUB")) icon = "ðŸ”„";
+        let icon = "📝";
+        if (message.includes("pts")) icon = "🏀";
+        if (message.includes("Falta")) icon = "⚠️";
+        if (message.includes("SUB")) icon = "🔄";
         
         const event = {
             id: Date.now(),
@@ -129,7 +129,7 @@ const ClockEngine = {
             } else {
                 this.stop();
                 SoundManager.play('buzina');
-                notify("FIM DE PERÃODO!");
+                notify("FIM DE PERÍODO!");
             }
         }, 100);
     },
@@ -233,7 +233,7 @@ const UIManager = {
         const html = SoundManager.queue.map(item => `
             <div class="queue-item dj-queue-item">
                 <span>${item.category}</span>
-                <span class="q-remove" onclick="SoundManager.removeFromQueue(${item.id})">âœ•</span>
+                <span class="q-remove" onclick="SoundManager.removeFromQueue(${item.id})">✖</span>
             </div>
         `).join('');
         const matchQ = document.getElementById('audio-queue');
@@ -291,7 +291,7 @@ const UIManager = {
                     <div class="p-info">
                         <span class="p-num" style="color: ${isExcluded ? '#ff0000' : 'var(--team-color)'}">#${p.number}</span>
                         <span class="p-name">${p.name}</span>
-                        <span class="p-fouls" style="color: ${isExcluded ? '#ff0000' : 'inherit'}">${p.fouls}F ${isExcluded ? 'ðŸ›‘' : ''}</span>
+                        <span class="p-fouls" style="color: ${isExcluded ? '#ff0000' : 'inherit'}">${p.fouls}F ${isExcluded ? '🚫' : ''}</span>
                     </div>
                     <div class="player-actions">
                         <button class="btn btn-xs btn-team" ${isExcluded ? 'disabled' : ''} onclick="window.addPoints('${teamKey}', '${p.number}', 1)">+1</button>
@@ -314,7 +314,7 @@ const UIManager = {
                     <span class="p-num-badge">${p.number}</span>
                     <span class="p-name">${p.name}</span>
                 </div>
-                <button class="btn btn-danger btn-xs" onclick="window.removePlayer('${teamKey}', ${i})">âœ•</button>
+                <button class="btn btn-danger btn-xs" onclick="window.removePlayer('${teamKey}', ${i})">✖</button>
             </div>
         `).join('');
     },
@@ -329,7 +329,7 @@ const UIManager = {
                     <span class="log-text" style="${e.reverted ? 'text-decoration: line-through; opacity: 0.5;' : ''}">${e.message}</span>
                 </div>
                 <button class="btn btn-xs ${e.reverted ? 'btn-success' : ''}" onclick="window.revertEvent(${e.id})" title="${e.reverted ? 'Restaurar' : 'Reverter'}">
-                    ${e.reverted ? 'âœ…' : 'ðŸš«'}
+                    ${e.reverted ? '✅' : '🚫'}
                 </button>
             </div>
         `).reverse().join('');
@@ -354,7 +354,7 @@ const UIManager = {
                      onclick="${isExcluded ? '' : `window.selectSubPlayer('in', '${p.number}')`}">
                     <span class="sub-num">#${p.number}</span>
                     <span class="sub-name">${p.name}</span>
-                    <span class="sub-fouls">${p.fouls}F ${isExcluded ? 'ðŸ›‘' : ''}</span>
+                    <span class="sub-fouls">${p.fouls}F ${isExcluded ? '🚫' : ''}</span>
                 </div>
             `;
         }).join('');
@@ -377,7 +377,7 @@ window.selectSubPlayer = (type, num) => {
         const pOut = team.players.find(p => p.number === subState.outPlayerNum);
         const pIn = team.players.find(p => p.number === subState.inPlayerNum);
         
-        if (pIn.fouls >= 5) return notify("Jogador com 5 faltas nÃ£o pode entrar!", "error");
+        if (pIn.fouls >= 5) return notify("Jogador com 5 faltas não pode entrar!", "error");
         
         pOut.inCourt = false; 
         pIn.inCourt = true;
@@ -401,12 +401,12 @@ window.addPoints = (team, num, pts) => {
 window.addFoul = (team, num) => {
     const p = gameState.teams[team].players.find(x => x.number == num);
     if (p) {
-        if (p.fouls >= 5) return notify(`JOGADOR #${num} JÃ ESTÃ EXCLUÃDO!`);
+        if (p.fouls >= 5) return notify(`JOGADOR #${num} JÁ ESTÁ EXCLUÍDO!`);
         p.fouls++;
         gameState.teams[team].fouls++;
         GameEngine.logEvent(`Falta #${num}`, 'foul', team, num);
         if (p.fouls >= 5) {
-            notify(`JOGADOR #${num} EXCLUÃDO (5 FALTAS)!`, 'error');
+            notify(`JOGADOR #${num} EXCLUÍDO (5 FALTAS)!`, 'error');
             SoundManager.play('buzina');
         }
         UIManager.updateScoreboard();
@@ -481,7 +481,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gameState.teams.home.color = document.getElementById('home-color').value;
         gameState.teams.away.color = document.getElementById('away-color').value;
         
-        if (gameState.teams.home.players.length < 5 || gameState.teams.away.players.length < 5) return notify("MÃ­nimo de 5 jogadores!");
+        if (gameState.teams.home.players.length < 5 || gameState.teams.away.players.length < 5) return notify("Mínimo de 5 jogadores!");
         gameState.teams.home.players.slice(0, 5).forEach(p => p.inCourt = true);
         gameState.teams.away.players.slice(0, 5).forEach(p => p.inCourt = true);
         UIManager.switchScreen('match-screen');
@@ -497,15 +497,15 @@ document.addEventListener('DOMContentLoaded', () => {
             { number: '4', name: 'Yago Mateus', fouls: 0, points: 0, inCourt: false },
             { number: '9', name: 'Marcelinho Huertas', fouls: 0, points: 0, inCourt: false },
             { number: '11', name: 'Marquinhos Sousa', fouls: 0, points: 0, inCourt: false },
-            { number: '17', name: 'Anderson VarejÃ£o', fouls: 0, points: 0, inCourt: false },
+            { number: '17', name: 'Anderson Varejão', fouls: 0, points: 0, inCourt: false },
             { number: '25', name: 'Olivinha Rodriguez', fouls: 0, points: 0, inCourt: false },
-            { number: '10', name: 'Gabriel JaÃº', fouls: 0, points: 0, inCourt: false },
+            { number: '10', name: 'Gabriel Jaú', fouls: 0, points: 0, inCourt: false },
             { number: '32', name: 'Rafael Mineiro', fouls: 0, points: 0, inCourt: false },
             { number: '6', name: 'Franco Balbi', fouls: 0, points: 0, inCourt: false },
             { number: '8', name: 'Vitor Benite', fouls: 0, points: 0, inCourt: false },
             { number: '14', name: 'Rafael Hettsheimeir', fouls: 0, points: 0, inCourt: false },
             { number: '20', name: 'Dar Tucker', fouls: 0, points: 0, inCourt: false },
-            { number: '44', name: 'MartÃ­n Cuello', fouls: 0, points: 0, inCourt: false }
+            { number: '44', name: 'Martín Cuello', fouls: 0, points: 0, inCourt: false }
         ];
         gameState.teams.away.name = "FRANCA";
         gameState.teams.away.color = "#2196f3";
