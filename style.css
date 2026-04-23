@@ -1,4 +1,4 @@
-:root {
+﻿:root {
     --bg-color: #080808;
     --surface-color: #121212;
     --card-bg: #1a1a1a;
@@ -90,7 +90,7 @@ body {
     margin-top: 1rem;
 }
 
-/* Central Log - ESPAÇO MÁXIMO */
+/* Central Log - ESPAÃ‡O MÃXIMO */
 .central-log {
     background: rgba(255,255,255,0.02);
     border-radius: 24px;
@@ -207,7 +207,7 @@ body {
 .p-name { font-weight: 500; }
 
 .score {
-    font-size: 12rem; /* Aumentado drasticamente para visibilidade à distância */
+    font-size: 12rem; /* Aumentado drasticamente para visibilidade Ã  distÃ¢ncia */
     font-weight: 900;
     font-family: monospace;
     line-height: 1;
@@ -233,7 +233,7 @@ body {
 
 .btn-xl { padding: 25px 80px; font-size: 2rem; width: 100%; position: relative; }
 
-/* Animação para chamar atenção no START */
+/* AnimaÃ§Ã£o para chamar atenÃ§Ã£o no START */
 .pulse-attention {
     animation: pulse-glow 1.5s infinite;
     box-shadow: 0 0 0 0 rgba(255, 107, 0, 0.7);
@@ -460,7 +460,7 @@ body {
     box-shadow: 0 0 20px #388e3c;
 }
 
-/* FILA DE �UDIO */
+/* FILA DE ÁUDIO */
 .sound-queue-panel {
     margin-top: 20px;
     background: rgba(0,0,0,0.4);
@@ -540,7 +540,7 @@ body {
     overflow-y: auto;
 }
 
-/* Ajuste no container do rel�gio para n�o empurrar tudo */
+/* Ajuste no container do relógio para não empurrar tudo */
 .clocks-container {
     padding: 15px !important;
 }
@@ -868,87 +868,95 @@ body {
 .btn-soundboard-hero .btn-text span { display: block; font-size: 0.7rem; font-weight: 800; opacity: 0.7; }
 .btn-soundboard-hero .btn-text strong { display: block; font-size: 1.2rem; font-weight: 900; }
 
-.glass-card {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 30px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-}
 
-.form-group-row {
-    display: flex;
-    gap: 20px;
-    align-items: flex-end;
-}
+.glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 35px; box-shadow: 0 25px 60px rgba(0,0,0,0.4); margin-bottom: 20px; }
+.form-group-row { display: flex; align-items: flex-end; gap: 20px; width: 100%; }
+.input-wrap { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.input-wrap label { display: block; font-size: 0.8rem; color: rgba(255, 255, 255, 0.9); font-weight: 800; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+#input-competition { background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; padding: 18px 25px; color: #fff; font-size: 1.3rem; font-weight: 600; width: 100%; transition: all 0.3s ease; box-shadow: inset 0 2px 10px rgba(0,0,0,0.2); }
+#input-competition:focus { background: rgba(255, 255, 255, 0.12); border-color: #ff6b00; outline: none; box-shadow: 0 0 30px rgba(255, 107, 0, 0.3); transform: translateY(-1px); }
+.btn-start-hero { background: linear-gradient(135deg, #ff6b00, #ff8e3c); color: white; border: none; padding: 18px 45px; border-radius: 12px; font-size: 1.2rem; font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 12px; box-shadow: 0 12px 25px rgba(255, 107, 0, 0.3); text-transform: uppercase; letter-spacing: 1px; }
+.btn-start-hero:hover { transform: translateY(-3px); box-shadow: 0 18px 35px rgba(255, 107, 0, 0.4); filter: brightness(1.1); }
+.btn-start-hero:active { transform: translateY(-1px); }
 
-.input-wrap { flex: 1; }
-.input-wrap label {
-    display: block;
-    font-size: 0.7rem;
-    color: #888;
-    letter-spacing: 2px;
-    margin-bottom: 10px;
-}
+/* Estilo de Jogador Excluído (5 Faltas) */
+.player-match-card.excluded { background: rgba(255, 0, 0, 0.1); border-color: rgba(255, 0, 0, 0.3) !important; opacity: 0.8; }
+.player-match-card.excluded .p-num, .player-match-card.excluded .p-name { color: #ff8888; text-decoration: line-through; }
+.player-match-card.excluded button:not(.btn-danger) { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+.player-match-card.excluded .p-fouls { font-weight: bold; animation: blink-red 1s infinite; }
+@keyframes blink-red { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-.btn-start-hero {
-    background: #fff;
-    color: #000;
-    border: none;
-    padding: 15px 30px;
-    border-radius: 10px;
-    font-weight: 900;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: 0.3s;
-}
+/* Botões Dinâmicos por Time */
+.btn-team { background: rgba(255,255,255,0.05); border: 1px solid var(--team-color); color: #fff; box-shadow: 0 0 5px var(--team-color); }
+.btn-team:hover { background: var(--team-color); box-shadow: 0 0 15px var(--team-color); transform: scale(1.1); }
+.btn-team:active { transform: scale(0.95); }
 
-.btn-start-hero:hover {
-    background: #ffab00;
-    transform: scale(1.05);
-}
+.p-num { font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 1.2rem; text-shadow: 0 0 10px var(--team-color); }
 
-.teams-setup {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    margin-top: 30px;
-}
+.player-match-card { border-left: 5px solid var(--team-color) !important; background: rgba(255,255,255,0.02); transition: 0.3s; }
+.player-match-card:hover { background: rgba(255,255,255,0.05); border-left-width: 8px !important; }
 
-.team-card {
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 15px;
-    padding: 25px;
-    transition: 0.3s;
-}
+.btn-team.btn-warning { border-color: #ffea00; box-shadow: 0 0 5px var(--team-color); }
+.btn-team.btn-danger { border-color: #ff3d00; box-shadow: 0 0 5px var(--team-color); }
+.btn-team.btn-warning:hover { background: #ffea00; color: #000; }
+.btn-team.btn-danger:hover { background: #ff3d00; color: #fff; }
 
-.team-card:hover {
-    background: rgba(255,255,255,0.05);
-    border-color: rgba(255,255,255,0.1);
-    transform: translateY(-5px);
-}
+/* Restaurando Estilos de Setup de Jogadores */
+.setup-container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+.setup-hero { text-align: center; margin-bottom: 3rem; }
+.setup-hero h1 { font-size: 3.5rem; font-weight: 900; letter-spacing: -2px; }
+.setup-hero h1 span { color: var(--primary-color); }
 
-.h3-input {
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid rgba(255,255,255,0.1);
-    color: #fff;
-    font-size: 1.5rem;
-    font-weight: 800;
-    width: 100%;
-    margin-bottom: 20px;
-    padding: 5px 0;
-    transition: 0.3s;
-}
+.add-player-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; display: flex; gap: 10px; margin-bottom: 20px; border: 1px dashed rgba(255,255,255,0.1); }
+.input-num { width: 60px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; text-align: center; font-weight: bold; font-size: 1.1rem; }
+.input-name { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; padding: 10px 15px; font-size: 1rem; }
+.input-num:focus, .input-name:focus { border-color: var(--primary-color); outline: none; background: rgba(0,0,0,0.5); }
 
-.h3-input:focus {
-    outline: none;
-    border-bottom-color: #ffab00;
-}
+.player-list-container { background: rgba(0,0,0,0.2); border-radius: 16px; padding: 10px; min-height: 200px; }
+.player-list { display: flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: auto; }
 
-.btn-musica { background: #9c27b0; color: white; border: none; padding: 5px 12px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 1.2rem; }
-.btn-musica:hover { background: #ba68c8; transform: scale(1.1); box-shadow: 0 0 15px rgba(156, 39, 176, 0.5); }
-.dj-pad.musica { background: #9c27b0; box-shadow: 0 0 10px rgba(156, 39, 176, 0.3); }
-.dj-pad.musica:hover { background: #ba68c8; box-shadow: 0 0 20px rgba(156, 39, 176, 0.6); }
+.player-row { background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
+.player-row:hover { background: rgba(255,255,255,0.08); transform: translateX(5px); }
+.player-row .p-info { display: flex; align-items: center; gap: 10px; }
+.player-row .p-num-badge { background: var(--primary-color); color: white; padding: 2px 8px; border-radius: 6px; font-weight: 900; font-size: 0.8rem; }
+.player-row .btn-danger { width: 28px; height: 28px; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; opacity: 0.5; }
+.player-row .btn-danger:hover { opacity: 1; transform: scale(1.1); }
+
+/* RESTAURAÇÃO: Seleção de Cores e Nomes de Time */
+.input-group { margin-bottom: 25px; }
+.input-group label { display: block; font-size: 0.75rem; color: rgba(255,255,255,0.6); font-weight: bold; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+.team-name-input { width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px 20px; color: #fff; font-size: 1.5rem; font-weight: 800; text-transform: uppercase; transition: 0.3s; }
+.team-name-input:focus { background: rgba(255, 255, 255, 0.1); border-color: var(--primary-color); outline: none; box-shadow: 0 0 20px rgba(255, 107, 0, 0.2); }
+
+.color-picker-wrap { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+.color-preset { width: 38px; height: 38px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.1); cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
+.color-preset:hover { transform: scale(1.2); border-color: rgba(255,255,255,0.5); z-index: 2; }
+.color-preset.active { border-color: #fff; transform: scale(1.1); box-shadow: 0 0 20px rgba(255,255,255,0.4); }
+.color-preset.active::after { content: '✓'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; font-weight: 900; font-size: 1.2rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+
+.custom-color-input { width: 45px; height: 45px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; background: transparent; padding: 0; overflow: hidden; transition: 0.3s; }
+.custom-color-input::-webkit-color-swatch-wrapper { padding: 0; }
+.custom-color-input::-webkit-color-swatch { border: none; border-radius: 50%; }
+.custom-color-input:hover { transform: scale(1.1); border-color: #fff; }
+
+/* Ajustes de Alinhamento dos Cards de Jogadores */
+.player-match-card .p-info { display: grid; grid-template-columns: 40px 1fr 50px; align-items: center; gap: 10px; width: 100%; margin-bottom: 10px; }
+.player-match-card .p-name { font-size: 0.9rem; line-height: 1.1; white-space: normal; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-align: left; }
+.player-match-card .p-num { font-weight: 900; font-size: 1.2rem; }
+.player-match-card .p-fouls { font-weight: 800; text-align: right; background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 6px; min-width: 45px; }
+
+/* Ajustes do Modal de Substituição */
+.sub-item { display: grid !important; grid-template-columns: 40px 1fr 50px; align-items: center; gap: 15px; padding: 12px 20px; border-radius: 10px; margin-bottom: 8px; background: rgba(255,255,255,0.05); transition: 0.2s; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); }
+.sub-item:hover { background: rgba(255,255,255,0.12); transform: translateX(5px); }
+.sub-item.selected { background: var(--primary-color); border-color: #fff; box-shadow: 0 0 15px rgba(255,107,0,0.4); }
+.sub-num { font-weight: 900; font-size: 1.1rem; opacity: 0.7; }
+.sub-name { font-weight: 600; font-size: 0.95rem; text-align: left; line-height: 1.2; }
+.sub-fouls { font-weight: 800; text-align: right; color: #ffeb3b; font-size: 0.85rem; }
+.sub-item.excluded { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); border-color: #ff0000; }
+.sub-item.excluded .sub-fouls { color: #ff0000; }
+
+/* FIBA COMPLIANCE UPDATES */
+.period-badge { font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; color: var(--text-secondary); margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.period-badge span { color: var(--warning); background: rgba(255, 234, 0, 0.1); padding: 2px 8px; border-radius: 4px; }
+#next-period-btn { opacity: 0.4; padding: 2px 6px; font-size: 0.6rem; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: transparent; color: #fff; cursor: pointer; transition: 0.2s; }
+#next-period-btn:hover { opacity: 1; background: rgba(255,255,255,0.1); }

@@ -49,8 +49,17 @@
                     <div class="teams-setup">
                         <div class="team-card" id="home-setup">
                             <div class="team-header">
-                                <input type="text" id="home-name" placeholder="Time Casa" class="h3-input" value="FLAMENGO">
-                                <input type="color" id="home-color" value="#ff6b00">
+                                <input type="text" id="home-name" placeholder="TIME CASA" class="team-name-input" value="FLAMENGO">
+                                <div class="color-picker-area">
+                                    <label>COR DO TIME</label>
+                                    <div class="color-picker-wrap">
+                                        <button class="color-preset" style="background:#ff0000" onclick="document.getElementById('home-color').value='#ff0000'"></button>
+                                        <button class="color-preset" style="background:#0000ff" onclick="document.getElementById('home-color').value='#0000ff'"></button>
+                                        <button class="color-preset" style="background:#008000" onclick="document.getElementById('home-color').value='#008000'"></button>
+                                        <button class="color-preset" style="background:#ffffff" onclick="document.getElementById('home-color').value='#ffffff'"></button>
+                                        <input type="color" id="home-color" value="#ff6b00" class="custom-color-input">
+                                    </div>
+                                </div>
                             </div>
                             <div class="add-player-box">
                                 <input type="text" id="home-p-num" placeholder="#" class="input-num">
@@ -64,8 +73,17 @@
                         
                         <div class="team-card" id="away-setup">
                             <div class="team-header">
-                                <input type="text" id="away-name" placeholder="Time Visitante" class="h3-input" value="FRANCA">
-                                <input type="color" id="away-color" value="#2196f3">
+                                <input type="text" id="away-name" placeholder="TIME VISITANTE" class="team-name-input" value="FRANCA">
+                                <div class="color-picker-area">
+                                    <label>COR DO TIME</label>
+                                    <div class="color-picker-wrap">
+                                        <button class="color-preset" style="background:#ff6b00" onclick="document.getElementById('away-color').value='#ff6b00'"></button>
+                                        <button class="color-preset" style="background:#2196f3" onclick="document.getElementById('away-color').value='#2196f3'"></button>
+                                        <button class="color-preset" style="background:#9c27b0" onclick="document.getElementById('away-color').value='#9c27b0'"></button>
+                                        <button class="color-preset" style="background:#333333" onclick="document.getElementById('away-color').value='#333333'"></button>
+                                        <input type="color" id="away-color" value="#2196f3" class="custom-color-input">
+                                    </div>
+                                </div>
                             </div>
                             <div class="add-player-box">
                                 <input type="text" id="away-p-num" placeholder="#" class="input-num">
@@ -107,7 +125,10 @@
                     <!-- Centro: Cronômetros e Histórico -->
                     <div class="center-panel">
                         <div class="clocks-container">
-                            <div class="period-badge">PERÍODO <span id="display-period">1</span></div>
+                            <div class="period-badge">
+                                PERÍODO <span id="display-period">1</span>
+                                <button class="btn btn-xs btn-outline" id="next-period-btn" title="Próximo Período">➔</button>
+                            </div>
                             <div id="game-clock" class="main-clock">10:00</div>
                             <div id="shot-clock" class="shot-clock">24</div>
                             
