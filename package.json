@@ -4,9 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 3000",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "npx vite --port 3000",
+    "build": "npx vite build",
+    "preview": "npx vite preview"
   },
   "dependencies": {
     "vite": "^5.0.0"
