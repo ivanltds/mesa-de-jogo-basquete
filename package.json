@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "npx vite --port 3000",
-    "build": "echo 'Using pre-built dist folder'",
+    "build": "vite build",
     "preview": "npx vite preview",
     "test": "vitest",
     "test:e2e": "playwright test",
