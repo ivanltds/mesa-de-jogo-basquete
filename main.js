@@ -3,6 +3,7 @@ const gameState = {
     shotClock: 24000,
     isActive: false,
     period: 1,
+    possession: 'home',
     teams: {
         home: { name: 'CASA', score: 0, fouls: 0, timeouts: 0, players: [], color: '#ff6b00' },
         away: { name: 'VISITANTE', score: 0, fouls: 0, timeouts: 0, players: [], color: '#2196f3' }
@@ -12,10 +13,12 @@ const gameState = {
 
 const SoundManager = {
     queue: [],
+    isPlaying: false,
     library: {
         cesta: ["cesta (10).mp3", "cesta (2).mp3", "cesta (3).mp3", "cesta (4).mp3", "cesta (5).mp3", "cesta (6).mp3", "cesta (7).mp3", "cesta (8).mp3", "cesta (9).mp3", "cesta- (2).mp3", "cesta- (3).mp3", "cesta-.mp3", "cesta-1.mp3", "cesta-10.mp3", "cesta-11.mp3", "cesta-12.mp3", "cesta-13.mp3", "cesta-14.mp3", "cesta-15.mp3", "cesta-3.mp3", "cesta-4.mp3", "cesta-5.mp3", "cesta-6.mp3", "cesta-7.mp3", "cesta-8.mp3", "cesta-9.mp3", "cesta.mp3"],
         errou: ["errou (2).mp3", "errou (3).mp3", "errou (4).mp3", "errou-.mp3", "errou-1.mp3", "errou-2.mp3", "errou-3.mp3", "errou-4.mp3", "errou-5.mp3", "errou-6.mp3", "errou-7.mp3", "errou-8.mp3", "errou-9.mp3", "errou.mp3", "errou].mp3"],
-        divertido: ["divertido (10).mp3", "divertido (11).mp3", "divertido (2).mp3", "divertido (3).mp3", "divertido (4).mp3", "divertido (5).mp3", "divertido (6).mp3", "divertido (7).mp3", "divertido (8).mp3", "divertido (9).mp3", "divertido.mp3", "esquisito-.mp3", "esquisito-1.mp3", "esquisito-2.mp3", "esquisito-3.mp3", "esquisito-4.mp3", "esquisito.mp3"],
+        divertido: ["divertido (10).mp3", "divertido (11).mp3", "divertido (2).mp3", "divertido (3).mp3", "divertido (4).mp3", "divertido (5).mp3", "divertido (6).mp3", "divertido (7).mp3", "divertido (8).mp3", "divertido (9).mp3", "divertido.mp3"],
+        esquisito: ["esquisito-.mp3", "esquisito-1.mp3", "esquisito-2.mp3", "esquisito-3.mp3", "esquisito-4.mp3", "esquisito.mp3"],
         toco: ["toco (2).mp3", "toco (3).mp3", "toco (4).mp3", "toco (5).mp3", "toco (6).mp3", "toco (7).mp3", "toco-.mp3", "toco-1.mp3", "toco.mp3"],
         posse: ["posse-1.mp3", "posse-2.mp3", "posse-3.mp3", "posse-4.mp3", "posse-5.mp3", "posse-6.mp3", "posse-7.mp3", "posse-8.mp3", "posse.mp3"],
         nba: ["nba (2).mp3", "nba (3).mp3", "nba (4).mp3", "nba(1).mp3", "nba.mp3"],
@@ -45,26 +48,56 @@ const SoundManager = {
         const id = Date.now() + Math.random();
         this.queue.push({ id, category, file });
         UIManager.renderSoundQueue();
-        if (this.queue.length === 1) this.processQueue();
+        if (!this.isPlaying) this.processQueue();
     },
 
+    currentAudio: null,
+
     async processQueue() {
-        if (this.queue.length === 0) return;
+        if (this.queue.length === 0) {
+            this.isPlaying = false;
+            this.currentAudio = null;
+            return;
+        }
+        
+        this.isPlaying = true;
         const item = this.queue[0];
-        const audio = new Audio(`audios/${item.file}`);
-        audio.onended = () => {
-            this.queue.shift();
+        this.currentAudio = new Audio(`/audios/${item.file}`);
+        
+        const next = () => {
+            if (this.currentAudio) {
+                this.currentAudio.onended = null;
+                this.currentAudio.pause();
+                this.currentAudio = null;
+            }
+            if (this.queue[0] && this.queue[0].id === item.id) {
+                this.queue.shift();
+            }
             UIManager.renderSoundQueue();
             this.processQueue();
         };
-        await audio.play().catch(e => console.log("Erro audio:", e));
+
+        this.currentAudio.onended = next;
+
+        try {
+            await this.currentAudio.play();
+        } catch (e) {
+            console.warn("Falha ao tocar áudio, pulando...", e);
+            next();
+        }
     },
 
     skip() {
         if (this.queue.length > 0) {
             notify("Áudio pulado");
+            if (this.currentAudio) {
+                this.currentAudio.onended = null;
+                this.currentAudio.pause();
+                this.currentAudio = null;
+            }
             this.queue.shift();
             UIManager.renderSoundQueue();
+            this.isPlaying = false; // Força reinício do processamento
             this.processQueue();
         }
     },
@@ -72,6 +105,7 @@ const SoundManager = {
     removeFromQueue(id) {
         this.queue = this.queue.filter(item => item.id !== id);
         UIManager.renderSoundQueue();
+        if (this.queue.length === 0) this.isPlaying = false;
     }
 };
 
@@ -214,12 +248,54 @@ window.nextPeriod = () => {
     UIManager.updateScoreboard();
 };
 
+window.togglePossession = () => {
+    gameState.possession = gameState.possession === 'home' ? 'away' : 'home';
+    UIManager.updateScoreboard();
+};
+
 window.showReport = () => {
     document.getElementById('victory-modal').classList.remove('active');
+    UIManager.renderReport();
     UIManager.switchScreen('report-screen');
 };
 
 const UIManager = {
+    renderReport() {
+        const content = document.getElementById('report-content');
+        if (!content) return;
+
+        let html = '';
+        ['home', 'away'].forEach(teamKey => {
+            const team = gameState.teams[teamKey];
+            html += `
+                <div class="report-team-section">
+                    <h2 style="color: ${team.color}">${team.name} - ${team.score} PTS</h2>
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>NOME</th>
+                                <th>PTS</th>
+                                <th>F</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${team.players.map(p => `
+                                <tr>
+                                    <td>${p.number}</td>
+                                    <td>${p.name}</td>
+                                    <td>${p.points}</td>
+                                    <td>${p.fouls}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        });
+        content.innerHTML = html;
+    },
+
     switchScreen(screenId) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(screenId).classList.add('active');
@@ -327,9 +403,17 @@ const UIManager = {
         UIManager.renderActivePlayers('home');
         UIManager.renderActivePlayers('away');
         const periodDisplay = document.getElementById('display-period');
-        if (periodDisplay) periodDisplay.textContent = gameState.period;
+        if (periodDisplay) periodDisplay.innerText = gameState.period;
+
+        // Atualiza Seta de Posse
+        const arrow = document.getElementById('possession-arrow');
+        if (arrow) {
+            arrow.className = `possession-indicator ${gameState.possession}`;
+        }
+
         UIManager.updateLog();
         UIManager.updateClocks();
+        if (window.saveState) window.saveState();
     },
 
     renderSoundQueue() {
@@ -420,6 +504,7 @@ const UIManager = {
                 <button class="btn btn-danger btn-xs" onclick="window.removePlayer('${teamKey}', ${i})">✖</button>
             </div>
         `).join('');
+        if (window.saveState) window.saveState();
     },
 
     updateLog() {
@@ -563,6 +648,10 @@ window.removePlayer = (team, i) => {
 
 window.notify = (msg, type = 'info') => {
     const container = document.getElementById('toast-container');
+    if (!container) {
+        console.log(`[Notification] ${type}: ${msg}`);
+        return;
+    }
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     toast.innerText = msg;
@@ -668,12 +757,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if(document.getElementById('toggle-clock-btn')) document.getElementById('toggle-clock-btn').onclick = ClockEngine.toggle;
-    if(document.getElementById('reset-24-btn')) document.getElementById('reset-24-btn').onclick = () => ClockEngine.resetShotClock(24000);
+    if (document.getElementById('reset-24-btn')) document.getElementById('reset-24-btn').onclick = () => {
+        ClockEngine.resetShotClock(24000);
+        window.togglePossession();
+    };
     if(document.getElementById('reset-14-btn')) document.getElementById('reset-14-btn').onclick = () => ClockEngine.resetShotClock(14000);
     if(document.getElementById('next-period-btn')) document.getElementById('next-period-btn').onclick = () => window.nextPeriod();
     if(document.getElementById('fast-forward-btn')) document.getElementById('fast-forward-btn').onclick = () => ClockEngine.setTestTime();
     
-    if (document.getElementById('mystery-btn')) document.getElementById('mystery-btn').onclick = () => SoundManager.play('posse');
+    if (document.getElementById('mystery-btn')) document.getElementById('mystery-btn').onclick = () => SoundManager.play('esquisito');
     if (document.getElementById('fun-btn')) document.getElementById('fun-btn').onclick = () => SoundManager.play('divertido');
     
     if (document.getElementById('nba-btn')) document.getElementById('nba-btn').onclick = () => SoundManager.play('nba');
@@ -681,7 +773,32 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('musica-btn')) document.getElementById('musica-btn').onclick = () => SoundManager.play('musica');
     if (document.getElementById('skip-audio-btn')) document.getElementById('skip-audio-btn').onclick = () => SoundManager.skip();
     if (document.getElementById('close-sub-modal')) document.getElementById('close-sub-modal').onclick = () => document.getElementById('sub-modal').classList.remove('active');
+
+    // TDD Phase 1: Inicializa e carrega estado salvo
+    window.loadState();
 });
+
+window.saveState = () => {
+    try {
+        localStorage.setItem('ritmo_de_jogo_state', JSON.stringify(gameState));
+    } catch (e) {
+        console.error("Erro ao salvar estado:", e);
+    }
+};
+
+window.loadState = () => {
+    try {
+        const saved = localStorage.getItem('ritmo_de_jogo_state');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            // Merge profundo simples ou atribuição direta
+            Object.assign(gameState, parsed);
+            UIManager.updateScoreboard();
+        }
+    } catch (e) {
+        console.error("Erro ao carregar estado:", e);
+    }
+};
 
 window.SoundManager = SoundManager;
 setTimeout(() => UIManager.renderSoundboard(), 500);

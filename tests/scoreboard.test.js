@@ -16,21 +16,29 @@ describe('FIBA Digital Scoreboard - Suíte Completa de Estabilização', () => {
     let SoundManager;
 
     beforeEach(() => {
-        dom = new JSDOM(html, { runScripts: "dangerously", resources: "usable" });
+        dom = new JSDOM(html, { runScripts: "dangerously", resources: "usable", url: "http://localhost" });
         window = dom.window;
         document = window.document;
         
         // Mock global de Audio
         window.Audio = class {
             constructor() {
-                this.play = vi.fn().mockResolvedValue();
-                this.pause = vi.fn();
                 this.onended = null;
             }
+            play() { return Promise.resolve(); }
+            pause() {}
         };
+
+        // Mock localStorage
+        const storage = {};
+        vi.spyOn(window.localStorage, 'getItem').mockImplementation(key => storage[key] || null);
+        vi.spyOn(window.localStorage, 'setItem').mockImplementation((key, value) => storage[key] = value.toString());
+        vi.spyOn(window.localStorage, 'removeItem').mockImplementation(key => delete storage[key]);
+        vi.spyOn(window.localStorage, 'clear').mockImplementation(() => Object.keys(storage).forEach(key => delete storage[key]));
 
         // Injeção síncrona via eval
         window.eval(jsCode);
+        window.document.dispatchEvent(new window.Event('DOMContentLoaded'));
 
         gameState = window.gameState;
         GameEngine = window.GameEngine;
@@ -43,9 +51,6 @@ describe('FIBA Digital Scoreboard - Suíte Completa de Estabilização', () => {
         window.UIManager.renderSoundQueue = vi.fn();
         window.UIManager.renderSoundboard = vi.fn();
         window.UIManager.updateClocks = vi.fn();
-        
-        // Impedir execução real de processQueue globalmente
-        vi.spyOn(SoundManager, 'processQueue').mockImplementation(() => {});
         
         // Setup básico de jogadores para os testes
         gameState.teams.home.players = [
@@ -148,6 +153,158 @@ describe('FIBA Digital Scoreboard - Suíte Completa de Estabilização', () => {
             const testFile = "Buzina.mp3";
             SoundManager.playFile(testFile);
             expect(SoundManager.queue[0].file).toBe(testFile);
+        });
+
+        it('6.4 deve disparar a categoria correta ao clicar nos botões da mesa', () => {
+            const spy = vi.spyOn(window.SoundManager, 'play');
+            const skipSpy = vi.spyOn(window.SoundManager, 'skip');
+
+            document.getElementById('mystery-btn').click();
+            expect(spy).toHaveBeenCalledWith('esquisito');
+
+            document.getElementById('fun-btn').click();
+            expect(spy).toHaveBeenCalledWith('divertido');
+
+            document.getElementById('nba-btn').click();
+            expect(spy).toHaveBeenCalledWith('nba');
+
+            document.getElementById('torcida-btn').click();
+            expect(spy).toHaveBeenCalledWith('torcida');
+
+            document.getElementById('musica-btn').click();
+            expect(spy).toHaveBeenCalledWith('musica');
+
+            document.getElementById('skip-audio-btn').click();
+            expect(skipSpy).toHaveBeenCalled();
+        });
+
+        it('6.5 deve interromper o áudio atual e avançar ao pular', async () => {
+            // Mock de play para demorar um pouco (simulando áudio longo)
+            const playSpy = vi.spyOn(window.Audio.prototype, 'play').mockImplementation(() => new Promise(res => setTimeout(res, 100)));
+            const pauseSpy = vi.spyOn(window.Audio.prototype, 'pause');
+
+            SoundManager.play('buzina'); // Audio 1
+            SoundManager.play('buzina'); // Audio 2
+            
+            expect(SoundManager.queue.length).toBe(2);
+
+            // Pula o primeiro
+            SoundManager.skip();
+
+            expect(pauseSpy).toHaveBeenCalled();
+            expect(SoundManager.queue.length).toBe(1);
+            
+            // Limpa spies
+            playSpy.mockRestore();
+            pauseSpy.mockRestore();
+        });
+    });
+
+    describe('Fase 7: Persistência de Dados (Safety)', () => {
+        it('deve salvar o estado no localStorage e recuperar após recarregamento', () => {
+            // Setup inicial
+            window.gameState.teams.home.score = 50;
+            
+            // Simula a lógica de salvamento (que ainda não existe ou não está automatizada)
+            // No mundo real, queremos que isso aconteça automaticamente.
+            if (window.saveState) window.saveState();
+
+            // Simula um "refresh" reiniciando o estado na marra
+            // Aqui o teste deve falhar pois o loadState ainda não foi implementado no init
+            window.gameState.teams.home.score = 0;
+            if (window.loadState) window.loadState();
+
+            expect(window.gameState.teams.home.score).toBe(50);
+        });
+    });
+    
+    describe('Fase 8: Seta de Posse Alternada', () => {
+        it('deve alternar a direção da posse corretamente', () => {
+            // Estado inicial pode ser null ou home
+            expect(window.gameState.possession).toBeDefined();
+            
+            const initial = window.gameState.possession;
+            window.togglePossession();
+            
+            if (initial === 'home') {
+                expect(window.gameState.possession).toBe('away');
+            } else {
+                expect(window.gameState.possession).toBe('home');
+            }
+        });
+        
+        it('deve alternar a posse automaticamente ao clicar no botão de 24s', () => {
+            const initial = window.gameState.possession;
+            const btn = document.getElementById('reset-24-btn');
+            
+            // Simula clique no botão (o listener já está vinculado no DOMContentLoaded)
+            btn.click();
+            
+            if (initial === 'home') {
+                expect(window.gameState.possession).toBe('away');
+            } else {
+                expect(window.gameState.possession).toBe('home');
+            }
+        });
+    });
+
+    describe('Fase 9: Automação de Overtime e Fim de Jogo', () => {
+        it('deve entrar em Overtime (OT) se houver empate ao fim do 4º período', () => {
+            window.gameState.period = 4;
+            window.gameState.clock = 0;
+            window.gameState.teams.home.score = 80;
+            window.gameState.teams.away.score = 80;
+            
+            window.nextPeriod();
+            
+            expect(window.gameState.period).toBe('OT');
+            expect(window.gameState.clock).toBe(300000); // 5 min
+        });
+
+        it('deve encerrar o jogo e mostrar modal se não houver empate no 4º período', () => {
+            window.gameState.period = 4;
+            window.gameState.clock = 0;
+            window.gameState.teams.home.score = 85;
+            window.gameState.teams.away.score = 80;
+            
+            const spy = vi.spyOn(window.UIManager, 'showVictoryModal');
+            window.nextPeriod();
+            
+            expect(spy).toHaveBeenCalledWith('home');
+        });
+    });
+
+    describe('Fase 10: Relatório de Súmula', () => {
+        it('deve gerar o HTML do relatório com estatísticas dos jogadores', () => {
+            // Adiciona um jogador com pontos e atualiza placar do time
+            window.gameState.teams.home.players = [{ number: '10', name: 'Ivan', points: 15, fouls: 2, inCourt: true }];
+            window.gameState.teams.home.score = 15;
+            
+            // Força a renderização do relatório
+            const reportContainer = document.getElementById('report-content');
+            window.UIManager.renderReport();
+            
+            expect(reportContainer.innerHTML).toContain('Ivan');
+            expect(reportContainer.innerHTML).toContain('<td>15</td>');
+            expect(reportContainer.innerHTML).toContain('<td>2</td>');
+            expect(reportContainer.innerHTML).toContain('CASA - 15 PTS</h2>');
+        });
+    });
+
+    describe('Fase 11: Estabilização da Fila de Áudio', () => {
+        it('deve continuar processando a fila mesmo se um áudio falhar', async () => {
+            // Mock de falha no play
+            vi.spyOn(window.Audio.prototype, 'play').mockRejectedValue(new Error('Autoplay blocked'));
+            
+            // Adiciona 2 áudios
+            window.SoundManager.play('buzina');
+            window.SoundManager.play('buzina');
+            
+            // Aguarda os ciclos assíncronos (o catch gera uma nova microtask para cada erro)
+            await new Promise(res => setTimeout(res, 200));
+            
+            // Agora a fila deve ter sido limpa pelos catches
+            expect(window.SoundManager.queue.length).toBe(0);
         });
     });
 });

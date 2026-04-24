@@ -115,6 +115,13 @@
                     <!-- Centro: Cronômetros e Histórico -->
                     <div class="center-panel">
                         <div class="clocks-container">
+                            <div class="possession-container">
+                                <div class="possession-indicator home" id="possession-arrow" onclick="window.togglePossession()" title="Alternar Seta de Posse">
+                                    <span class="arrow-l">◀</span>
+                                    <span class="arrow-txt">POSSE</span>
+                                    <span class="arrow-r">▶</span>
+                                </div>
+                            </div>
                             <div class="period-badge">
                                 PERÍODO <span id="display-period">1</span>
                                 <button class="btn btn-xs btn-outline" id="next-period-btn" title="Próximo Período">➔</button>
@@ -135,7 +142,7 @@
                                     <button class="btn btn-nba" id="nba-btn" title="NBA">🏀</button>
                                     <button class="btn btn-torcida" id="torcida-btn" title="Torcida">🙌</button>
                                     <button class="btn btn-musica" id="musica-btn" title="Musicas">🎵</button>
-                                    <button class="btn btn-danger btn-sm" id="skip-audio-btn" title="Pular Áudio">⏭️</button>
+                                    <button class="btn btn-skip" id="skip-audio-btn" title="Pular Áudio">⏭️</button>
                                 </div>
                             </div>
                         </div>
@@ -194,7 +201,16 @@
         </div>
 
         <section id="report-screen" class="screen">
-            <div id="final-report"></div>
+            <div class="report-container glass-card">
+                <div class="report-header">
+                    <h1>SÚMULA DA PARTIDA</h1>
+                    <p>Ritmo de Jogo - Coyotes Arena</p>
+                </div>
+                <div id="report-content"></div>
+                <div class="report-footer">
+                    <button class="btn btn-secondary btn-lg" onclick="location.reload()">NOVA PARTIDA</button>
+                </div>
+            </div>
         </section>
 
         <!-- Modal de Vitória -->
@@ -218,7 +234,7 @@
         </div>
     </div>
 
-    <audio id="buzzer-sound" src="/assets/buzzer.mp3" preload="auto"></audio>
+    <audio id="buzzer-sound" src="/audios/Buzina.mp3" preload="auto"></audio>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script type="module" src="/main.js"></script>
 </body>
