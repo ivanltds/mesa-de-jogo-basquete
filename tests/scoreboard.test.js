@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { JSDOM } from 'jsdom';
 
-const html = fs.readFileSync(path.resolve(__dirname, '../index.html'), 'utf8');
+const html = fs.readFileSync(path.resolve(__dirname, '../mesa-de-jogo/index.html'), 'utf8');
 const jsCode = fs.readFileSync(path.resolve(__dirname, '../main.js'), 'utf8');
 
 describe('FIBA Digital Scoreboard - Suíte Completa de Estabilização', () => {
