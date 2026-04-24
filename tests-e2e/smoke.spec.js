@@ -1,18 +1,19 @@
 import { test, expect } from '@playwright/test';
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('/');
-  await page.addStyleTag({ content: `
-    *, *::before, *::after {
-      animation-duration: 0s !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0s !important;
-      scroll-behavior: auto !important;
-    }
-  `});
-});
-
 test.describe('FIBA Scoreboard - Smoke Tests', () => {
+  
+  test.beforeEach(async ({ page }) => {
+    // Desativa animações para estabilidade nos testes
+    await page.addStyleTag({ content: `
+      *, *::before, *::after {
+        animation-duration: 0s !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0s !important;
+        scroll-behavior: auto !important;
+      }
+    `});
+  });
+
   test('deve carregar a Landing Page inicial com os botões corretos', async ({ page }) => {
     await page.goto('/');
     

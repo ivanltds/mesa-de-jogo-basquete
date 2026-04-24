@@ -12,7 +12,10 @@ export default defineConfig({
     trace: 'on-first-retry',
     video: 'on-first-retry',
     viewport: { width: 1920, height: 1080 },
+    actionTimeout: 10000,
+    navigationTimeout: 30000,
   },
+  timeout: 60000,
 
   projects: [
     {

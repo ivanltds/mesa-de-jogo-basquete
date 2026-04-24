@@ -79,6 +79,6 @@ test.describe('FIBA Scoreboard - Fluxo de Tempo e Períodos', () => {
     await expect(page.locator('#shot-clock')).toHaveText('24');
     
     // Valida notificação específica
-    await expect(page.getByText('Faltas coletivas zeradas')).toBeVisible();
+    await expect(page.locator('#toast-container').getByText('Faltas coletivas zeradas')).toBeVisible();
   });
 });

@@ -12,7 +12,7 @@
 
         <div id="dev-tools">
             <button id="mock-data-btn" class="btn btn-secondary btn-sm">TIMES DE TESTE</button>
-            <button id="reset-app-btn" class="btn btn-danger btn-sm">RESET</button>
+            <button id="restart-match-btn" class="btn btn-danger btn-sm">REINICIAR PARTIDA</button>
         </div>
 
         <!-- Tela 1: Configuração -->
@@ -33,6 +33,7 @@
                                 <input type="text" id="input-competition" placeholder="Ex: NBB 2024" value="NBB 2024">
                             </div>
                             <button class="btn-start-hero" id="start-match-btn">INICIAR PARTIDA ➔</button>
+                            <button class="btn btn-secondary btn-sm" id="clear-all-btn" style="height: 60px; margin-left: 10px; opacity: 0.5;">LIMPAR TUDO</button>
                         </div>
                     </div>
 
@@ -230,6 +231,51 @@
                     </div>
                 </div>
                 <button class="btn btn-primary btn-xl" onclick="window.showReport()">VER RELATÓRIO DA SÚMULA</button>
+            </div>
+        </div>
+
+        <!-- Modal de Confirmação de Reinício (Soft Reset) -->
+        <div id="restart-modal" class="modal">
+            <div class="modal-content glass-card alert-modal">
+                <div class="modal-header">
+                    <span class="modal-icon">🔄</span>
+                    <h2>Reiniciar Partida?</h2>
+                </div>
+                <p>O placar, faltas e cronômetro serão zerados, mas os <strong>jogadores e times serão mantidos</strong>.</p>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="document.getElementById('restart-modal').classList.remove('active')">CANCELAR</button>
+                    <button class="btn btn-danger" id="confirm-restart-btn">SIM, REINICIAR</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Confirmação de Limpeza Total (Hard Reset) -->
+        <div id="clear-all-modal" class="modal">
+            <div class="modal-content glass-card alert-modal">
+                <div class="modal-header">
+                    <span class="modal-icon">💀</span>
+                    <h2>Limpar Tudo?</h2>
+                </div>
+                <p>Esta ação irá <strong>apagar permanentemente</strong> todos os times e jogadores cadastrados. O sistema voltará ao estado inicial.</p>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="document.getElementById('clear-all-modal').classList.remove('active')">CANCELAR</button>
+                    <button class="btn btn-danger" id="confirm-clear-all-btn">SIM, APAGAR TUDO</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Recuperação de Partida -->
+        <div id="recovery-modal" class="modal">
+            <div class="modal-content glass-card alert-modal recovery-card">
+                <div class="modal-header">
+                    <span class="modal-icon">🚩</span>
+                    <h2>Partida Interrompida</h2>
+                </div>
+                <p>Detectamos uma partida em andamento. Como deseja prosseguir?</p>
+                <div class="modal-actions vertical-actions">
+                    <button class="btn btn-primary btn-xl pulse-attention" id="confirm-continue-btn">CONTINUAR PARTIDA</button>
+                    <button class="btn btn-secondary" id="recovery-restart-btn">REINICIAR DO ZERO</button>
+                </div>
             </div>
         </div>
     </div>
