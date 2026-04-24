@@ -51,7 +51,7 @@ test.describe('FIBA Scoreboard - Fluxo de Tempo e Períodos', () => {
     await expect(shotClock).toHaveText('24');
   });
 
-  test('deve avançar o período e resetar faltas coletivas', async ({ page }) => {
+  test('deve avançar o período, resetar relógios e faltas coletivas', async ({ page }) => {
     // 1. Adiciona faltas coletivas (Time Casa)
     const homePlayerCard = page.locator('#home-active-players .player-match-card').first();
     const foulBtn = homePlayerCard.getByRole('button', { name: 'FOUL' });
@@ -60,12 +60,23 @@ test.describe('FIBA Scoreboard - Fluxo de Tempo e Períodos', () => {
     
     await expect(page.locator('#fouls-home')).toHaveText('2');
 
-    // 2. Avança o período
+    // 2. FFW para os últimos 10s e deixa zerar
+    await page.locator('#fast-forward-btn').click();
+    await page.locator('#toggle-clock-btn').click(); // Inicia o relógio
+    
+    // Aguarda o relógio zerar (leva aprox 10 segundos no Fast Forward)
+    await expect(page.locator('#game-clock')).toHaveText('0:00', { timeout: 12000 });
+
+    // 3. Avança o período
     await page.locator('#next-period-btn').click();
     
     // Valida novo período e reset de faltas
     await expect(page.locator('#display-period')).toHaveText('2');
     await expect(page.locator('#fouls-home')).toHaveText('0');
+    
+    // Valida reset dos relógios
+    await expect(page.locator('#game-clock')).toHaveText('10:00');
+    await expect(page.locator('#shot-clock')).toHaveText('24');
     
     // Valida notificação específica
     await expect(page.getByText('Faltas coletivas zeradas')).toBeVisible();

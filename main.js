@@ -108,6 +108,18 @@ const GameEngine = {
         };
         gameState.events.push(event);
         UIManager.updateLog();
+    },
+
+    endGame() {
+        const homeScore = gameState.teams.home.score;
+        const awayScore = gameState.teams.away.score;
+        const winnerKey = homeScore > awayScore ? 'home' : 'away';
+        const winner = gameState.teams[winnerKey];
+        
+        this.logEvent(`FIM DE JOGO! Vitória de ${winner.name}`, 'info');
+        SoundManager.play('buzina');
+        
+        UIManager.showVictoryModal(winnerKey);
     }
 };
 
@@ -153,16 +165,58 @@ const ClockEngine = {
 };
 
 window.nextPeriod = () => {
+    // 1. Valida se o relógio zerou
+    if (gameState.clock > 0) {
+        notify("O relógio precisa estar em 00:00 para avançar de período!", "error");
+        return;
+    }
+
+    // Para a bola antes de avançar o período
+    ClockEngine.stop();
+
+    // 2. Fim de jogo? (4º período em diante, desde que não haja empate)
+    const homeScore = gameState.teams.home.score;
+    const awayScore = gameState.teams.away.score;
+    
+    if (gameState.period >= 4 || String(gameState.period).startsWith('OT')) {
+        if (homeScore !== awayScore) {
+            GameEngine.endGame();
+            return;
+        }
+    }
+
     if (gameState.period < 4) {
         gameState.period++;
+        gameState.clock = 600000; // 10 minutos
+        gameState.shotClock = 24000;
+        
+        // Faltas coletivas zeram em quartos normais
+        gameState.teams.home.fouls = 0;
+        gameState.teams.away.fouls = 0;
+        
+        notify(`Início do Período ${gameState.period}! Faltas coletivas zeradas. Relógios reiniciados.`, 'info');
     } else {
-        gameState.period = 'OT';
+        // Se já chegou no 4º quarto, vai para o OT
+        if (gameState.period === 'OT') {
+            gameState.period = 'OT2';
+        } else {
+            gameState.period = 'OT';
+        }
+        
+        gameState.clock = 300000; // 5 minutos para Overtime
+        gameState.shotClock = 24000;
+        
+        // FIBA Rule: Faltas de equipe NÃO são zeradas para o Overtime
+        notify(`Início do ${gameState.period}! Faltas coletivas MANTIDAS. Relógio em 5:00.`, 'info');
     }
-    // Reset de faltas coletivas conforme Art. 41
-    gameState.teams.home.fouls = 0;
-    gameState.teams.away.fouls = 0;
-    notify(`Início do Período ${gameState.period}! Faltas coletivas zeradas.`);
+    
+    GameEngine.logEvent(`Avançou para o ${gameState.period}`, 'info');
     UIManager.updateScoreboard();
+};
+
+window.showReport = () => {
+    document.getElementById('victory-modal').classList.remove('active');
+    UIManager.switchScreen('report-screen');
 };
 
 const UIManager = {
@@ -170,6 +224,52 @@ const UIManager = {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(screenId).classList.add('active');
         if (screenId === 'match-screen') this.initMatchUI();
+    },
+
+    showVictoryModal(winnerKey) {
+        const modal = document.getElementById('victory-modal');
+        const winner = gameState.teams[winnerKey];
+        const card = document.getElementById('victory-card');
+        
+        document.getElementById('victory-winner-name').innerText = `${winner.name} VENCEU!`;
+        document.getElementById('victory-home-score').innerText = gameState.teams.home.score;
+        document.getElementById('victory-away-score').innerText = gameState.teams.away.score;
+        document.getElementById('v-home-name').innerText = gameState.teams.home.name;
+        document.getElementById('v-away-name').innerText = gameState.teams.away.name;
+        
+        // Aplica o glow da cor do time ganhador
+        card.style.boxShadow = `0 0 100px rgba(0, 0, 0, 0.9), inset 0 0 50px ${winner.color}44`;
+        document.getElementById('victory-winner-name').style.color = winner.color;
+        
+        modal.classList.add('active');
+        
+        // Explode os confetes
+        if (window.confetti) {
+            const colors = [winner.color, '#ffffff', '#ffd700'];
+            const duration = 5 * 1000;
+            const end = Date.now() + duration;
+
+            (function frame() {
+                window.confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: colors
+                });
+                window.confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: colors
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
     },
 
     initMatchUI() {
@@ -224,7 +324,8 @@ const UIManager = {
 
         UIManager.renderActivePlayers('home');
         UIManager.renderActivePlayers('away');
-        document.getElementById('display-period').textContent = gameState.period;
+        const periodDisplay = document.getElementById('display-period');
+        if (periodDisplay) periodDisplay.textContent = gameState.period;
         UIManager.updateLog();
         UIManager.updateClocks();
     },
@@ -475,62 +576,94 @@ document.addEventListener('DOMContentLoaded', () => {
     const sbHero = document.querySelector('.btn-soundboard-hero');
     if (sbHero) sbHero.onclick = window.openSoundboard;
 
-    document.getElementById('start-match-btn').onclick = () => {
-        gameState.teams.home.name = document.getElementById('home-name').value || 'CASA';
-        gameState.teams.away.name = document.getElementById('away-name').value || 'VISITANTE';
-        gameState.teams.home.color = document.getElementById('home-color').value;
-        gameState.teams.away.color = document.getElementById('away-color').value;
-        
-        if (gameState.teams.home.players.length < 5 || gameState.teams.away.players.length < 5) return notify("Mínimo de 5 jogadores!");
-        gameState.teams.home.players.slice(0, 5).forEach(p => p.inCourt = true);
-        gameState.teams.away.players.slice(0, 5).forEach(p => p.inCourt = true);
-        UIManager.switchScreen('match-screen');
-    };
+    const startBtn = document.getElementById('start-match-btn');
+    if (startBtn) {
+        startBtn.onclick = () => {
+            const hName = document.getElementById('home-name');
+            const aName = document.getElementById('away-name');
+            const hColor = document.getElementById('home-color');
+            const aColor = document.getElementById('away-color');
 
-    document.getElementById('btn-add-home-p').onclick = () => GameEngine.addPlayer('home', document.getElementById('home-p-name').value, document.getElementById('home-p-num').value);
-    document.getElementById('btn-add-away-p').onclick = () => GameEngine.addPlayer('away', document.getElementById('away-p-name').value, document.getElementById('away-p-num').value);
+            gameState.teams.home.name = (hName ? hName.value : '') || 'CASA';
+            gameState.teams.away.name = (aName ? aName.value : '') || 'VISITANTE';
+            gameState.teams.home.color = hColor ? hColor.value : '#ff0000';
+            gameState.teams.away.color = aColor ? aColor.value : '#0000ff';
+            
+            if (gameState.teams.home.players.length < 5 || gameState.teams.away.players.length < 5) return notify("Mínimo de 5 jogadores!");
+            gameState.teams.home.players.slice(0, 5).forEach(p => p.inCourt = true);
+            gameState.teams.away.players.slice(0, 5).forEach(p => p.inCourt = true);
+            UIManager.switchScreen('match-screen');
+        };
+    }
+
+    const addHomeBtn = document.getElementById('btn-add-home-p');
+    if (addHomeBtn) {
+        addHomeBtn.onclick = () => {
+            const name = document.getElementById('home-p-name');
+            const num = document.getElementById('home-p-num');
+            GameEngine.addPlayer('home', name ? name.value : '', num ? num.value : '');
+        };
+    }
+
+    const addAwayBtn = document.getElementById('btn-add-away-p');
+    if (addAwayBtn) {
+        addAwayBtn.onclick = () => {
+            const name = document.getElementById('away-p-name');
+            const num = document.getElementById('away-p-num');
+            GameEngine.addPlayer('away', name ? name.value : '', num ? num.value : '');
+        };
+    }
     
-    document.getElementById('mock-data-btn').onclick = () => {
-        gameState.teams.home.name = "FLAMENGO";
-        gameState.teams.home.color = "#ff0000";
-        gameState.teams.home.players = [
-            { number: '4', name: 'Yago Mateus', fouls: 0, points: 0, inCourt: false },
-            { number: '9', name: 'Marcelinho Huertas', fouls: 0, points: 0, inCourt: false },
-            { number: '11', name: 'Marquinhos Sousa', fouls: 0, points: 0, inCourt: false },
-            { number: '17', name: 'Anderson Varejão', fouls: 0, points: 0, inCourt: false },
-            { number: '25', name: 'Olivinha Rodriguez', fouls: 0, points: 0, inCourt: false },
-            { number: '10', name: 'Gabriel Jaú', fouls: 0, points: 0, inCourt: false },
-            { number: '32', name: 'Rafael Mineiro', fouls: 0, points: 0, inCourt: false },
-            { number: '6', name: 'Franco Balbi', fouls: 0, points: 0, inCourt: false },
-            { number: '8', name: 'Vitor Benite', fouls: 0, points: 0, inCourt: false },
-            { number: '14', name: 'Rafael Hettsheimeir', fouls: 0, points: 0, inCourt: false },
-            { number: '20', name: 'Dar Tucker', fouls: 0, points: 0, inCourt: false },
-            { number: '44', name: 'Martín Cuello', fouls: 0, points: 0, inCourt: false }
-        ];
-        gameState.teams.away.name = "FRANCA";
-        gameState.teams.away.color = "#2196f3";
-        gameState.teams.away.players = [
-            { number: '7', name: 'Jhonatan Luz', fouls: 0, points: 0, inCourt: false },
-            { number: '14', name: 'Lucas Dias', fouls: 0, points: 0, inCourt: false },
-            { number: '28', name: 'Lucas Mariano', fouls: 0, points: 0, inCourt: false },
-            { number: '32', name: 'David Jackson', fouls: 0, points: 0, inCourt: false },
-            { number: '9', name: 'Santiago Scala', fouls: 0, points: 0, inCourt: false },
-            { number: '3', name: 'Marcio Santos', fouls: 0, points: 0, inCourt: false },
-            { number: '5', name: 'Elinho Corazza', fouls: 0, points: 0, inCourt: false },
-            { number: '11', name: 'Edu Elevi', fouls: 0, points: 0, inCourt: false },
-            { number: '15', name: 'Guilherme Cipolini', fouls: 0, points: 0, inCourt: false },
-            { number: '21', name: 'Reynan Camilo', fouls: 0, points: 0, inCourt: false },
-            { number: '25', name: 'Georginho de Paula', fouls: 0, points: 0, inCourt: false },
-            { number: '33', name: 'Heissler Guillent', fouls: 0, points: 0, inCourt: false }
-        ];
-        UIManager.renderPlayerList('home');
-        UIManager.renderPlayerList('away');
-        document.getElementById('home-name').value = "FLAMENGO";
-        document.getElementById('away-name').value = "FRANCA";
-        document.getElementById('home-color').value = "#ff0000";
-        document.getElementById('away-color').value = "#2196f3";
-        notify("Times de Elite carregados!");
-    };
+    const mockBtn = document.getElementById('mock-data-btn');
+    if (mockBtn) {
+        mockBtn.onclick = () => {
+            gameState.teams.home.name = "FLAMENGO";
+            gameState.teams.home.color = "#ff0000";
+            gameState.teams.home.players = [
+                { number: '4', name: 'Yago Mateus', fouls: 0, points: 0, inCourt: false },
+                { number: '9', name: 'Marcelinho Huertas', fouls: 0, points: 0, inCourt: false },
+                { number: '11', name: 'Marquinhos Sousa', fouls: 0, points: 0, inCourt: false },
+                { number: '17', name: 'Anderson Varejão', fouls: 0, points: 0, inCourt: false },
+                { number: '25', name: 'Olivinha Rodriguez', fouls: 0, points: 0, inCourt: false },
+                { number: '10', name: 'Gabriel Jaú', fouls: 0, points: 0, inCourt: false },
+                { number: '32', name: 'Rafael Mineiro', fouls: 0, points: 0, inCourt: false },
+                { number: '6', name: 'Franco Balbi', fouls: 0, points: 0, inCourt: false },
+                { number: '8', name: 'Vitor Benite', fouls: 0, points: 0, inCourt: false },
+                { number: '14', name: 'Rafael Hettsheimeir', fouls: 0, points: 0, inCourt: false },
+                { number: '20', name: 'Dar Tucker', fouls: 0, points: 0, inCourt: false },
+                { number: '44', name: 'Martín Cuello', fouls: 0, points: 0, inCourt: false }
+            ];
+            gameState.teams.away.name = "FRANCA";
+            gameState.teams.away.color = "#2196f3";
+            gameState.teams.away.players = [
+                { number: '7', name: 'Jhonatan Luz', fouls: 0, points: 0, inCourt: false },
+                { number: '14', name: 'Lucas Dias', fouls: 0, points: 0, inCourt: false },
+                { number: '28', name: 'Lucas Mariano', fouls: 0, points: 0, inCourt: false },
+                { number: '32', name: 'David Jackson', fouls: 0, points: 0, inCourt: false },
+                { number: '9', name: 'Santiago Scala', fouls: 0, points: 0, inCourt: false },
+                { number: '3', name: 'Marcio Santos', fouls: 0, points: 0, inCourt: false },
+                { number: '5', name: 'Elinho Corazza', fouls: 0, points: 0, inCourt: false },
+                { number: '11', name: 'Edu Elevi', fouls: 0, points: 0, inCourt: false },
+                { number: '15', name: 'Guilherme Cipolini', fouls: 0, points: 0, inCourt: false },
+                { number: '21', name: 'Reynan Camilo', fouls: 0, points: 0, inCourt: false },
+                { number: '25', name: 'Georginho de Paula', fouls: 0, points: 0, inCourt: false },
+                { number: '33', name: 'Heissler Guillent', fouls: 0, points: 0, inCourt: false }
+            ];
+            UIManager.renderPlayerList('home');
+            UIManager.renderPlayerList('away');
+            
+            const hName = document.getElementById('home-name');
+            const aName = document.getElementById('away-name');
+            const hColor = document.getElementById('home-color');
+            const aColor = document.getElementById('away-color');
+
+            if (hName) hName.value = "FLAMENGO";
+            if (aName) aName.value = "FRANCA";
+            if (hColor) hColor.value = "#ff0000";
+            if (aColor) aColor.value = "#2196f3";
+            notify("Times de Elite carregados!");
+        };
+    }
 
     if(document.getElementById('toggle-clock-btn')) document.getElementById('toggle-clock-btn').onclick = ClockEngine.toggle;
     if(document.getElementById('reset-24-btn')) document.getElementById('reset-24-btn').onclick = () => ClockEngine.resetShotClock(24000);
@@ -552,7 +685,7 @@ window.SoundManager = SoundManager;
 setTimeout(() => UIManager.renderSoundboard(), 500);
 
 // EXPORTS PARA TESTES
-if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test' && typeof module !== 'undefined') {
     module.exports = { gameState, GameEngine, ClockEngine, UIManager, SoundManager };
 }
 

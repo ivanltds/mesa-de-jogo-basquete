@@ -968,3 +968,73 @@ body {
 .period-badge span { color: var(--warning); background: rgba(255, 234, 0, 0.1); padding: 2px 8px; border-radius: 4px; }
 #next-period-btn { opacity: 0.4; padding: 2px 6px; font-size: 0.6rem; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: transparent; color: #fff; cursor: pointer; transition: 0.2s; }
 #next-period-btn:hover { opacity: 1; background: rgba(255,255,255,0.1); }
+
+/* VICTORY MODAL - FIM DE JOGO */
+.victory-content {
+    background: radial-gradient(circle at top, #1a1e28 0%, #0d1015 100%);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 100px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(255,255,255,0.05);
+    text-align: center;
+    padding: 3rem;
+    max-width: 800px;
+    animation: victory-pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes victory-pop {
+    0% { transform: scale(0.8) translateY(50px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.victory-badge {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    letter-spacing: 4px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+.winner-name {
+    font-size: 4rem;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+    line-height: 1;
+}
+
+.victory-score {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem;
+    margin-bottom: 3rem;
+    background: rgba(0,0,0,0.4);
+    padding: 2rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.v-team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.v-team span:first-child {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.victory-score .score-box {
+    font-size: 6rem;
+    font-family: var(--font-heading);
+    font-weight: 900;
+    line-height: 1;
+}
+
+.score-divider {
+    font-size: 2rem;
+    color: rgba(255,255,255,0.2);
+    font-weight: 900;
+}

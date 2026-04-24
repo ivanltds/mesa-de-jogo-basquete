@@ -20,7 +20,7 @@ describe('FIBA Digital Scoreboard - Suíte Completa de Estabilização', () => {
         window = dom.window;
         document = window.document;
         
-        // Mock global de Audio (como classe para suportar 'new Audio')
+        // Mock global de Audio
         window.Audio = class {
             constructor() {
                 this.play = vi.fn().mockResolvedValue();
@@ -29,9 +29,8 @@ describe('FIBA Digital Scoreboard - Suíte Completa de Estabilização', () => {
             }
         };
 
-        const scriptEl = document.createElement("script");
-        scriptEl.textContent = jsCode;
-        document.body.appendChild(scriptEl);
+        // Injeção síncrona via eval
+        window.eval(jsCode);
 
         gameState = window.gameState;
         GameEngine = window.GameEngine;
