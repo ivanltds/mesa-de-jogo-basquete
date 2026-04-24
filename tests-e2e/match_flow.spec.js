@@ -3,6 +3,9 @@ import { test, expect } from '@playwright/test';
 test.describe('FIBA Scoreboard - Fluxo de Partida e Setup', () => {
   
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.removeItem('ritmo_de_jogo_state');
+    });
     await page.goto('/mesa-de-jogo/');
     await page.addStyleTag({ content: `
       *, *::before, *::after {

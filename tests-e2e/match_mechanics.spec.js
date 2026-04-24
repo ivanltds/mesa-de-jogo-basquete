@@ -3,6 +3,9 @@ import { test, expect } from '@playwright/test';
 test.describe('FIBA Scoreboard - Mecânicas de Jogo e Regras', () => {
   
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.removeItem('ritmo_de_jogo_state');
+    });
     await page.goto('/mesa-de-jogo/');
     // Desativa animações para estabilidade nos testes
     await page.addStyleTag({ content: `
