@@ -532,11 +532,11 @@ document.addEventListener('DOMContentLoaded', () => {
         notify("Times de Elite carregados!");
     };
 
-    document.getElementById('toggle-clock-btn').onclick = ClockEngine.toggle;
-    document.getElementById('reset-24-btn').onclick = () => ClockEngine.resetShotClock(24000);
-    document.getElementById('reset-14-btn').onclick = () => ClockEngine.resetShotClock(14000);
-    document.getElementById('next-period-btn').onclick = () => window.nextPeriod();
-    document.getElementById('fast-forward-btn').onclick = () => ClockEngine.setTestTime();
+    if(document.getElementById('toggle-clock-btn')) document.getElementById('toggle-clock-btn').onclick = ClockEngine.toggle;
+    if(document.getElementById('reset-24-btn')) document.getElementById('reset-24-btn').onclick = () => ClockEngine.resetShotClock(24000);
+    if(document.getElementById('reset-14-btn')) document.getElementById('reset-14-btn').onclick = () => ClockEngine.resetShotClock(14000);
+    if(document.getElementById('next-period-btn')) document.getElementById('next-period-btn').onclick = () => window.nextPeriod();
+    if(document.getElementById('fast-forward-btn')) document.getElementById('fast-forward-btn').onclick = () => ClockEngine.setTestTime();
     
     if (document.getElementById('mystery-btn')) document.getElementById('mystery-btn').onclick = () => SoundManager.play('posse');
     if (document.getElementById('fun-btn')) document.getElementById('fun-btn').onclick = () => SoundManager.play('divertido');

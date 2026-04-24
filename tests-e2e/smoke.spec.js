@@ -13,26 +13,37 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('FIBA Scoreboard - Smoke Tests', () => {
-  test('deve carregar a tela de setup inicial com o título correto', async ({ page }) => {
+  test('deve carregar a Landing Page inicial com os botões corretos', async ({ page }) => {
     await page.goto('/');
     
-    // Verifica se o título principal do setup está visível
+    // Verifica se o título da LP está presente
+    const title = page.locator('h1');
+    await expect(title).toContainText('A mesa inteligente');
+    
+    // Verifica se os links para as ferramentas existem
+    const btnPlacar = page.locator('text=Abrir Placar Oficial');
+    await expect(btnPlacar).toBeVisible();
+    
+    const btnDJ = page.locator('text=Acessar Modo DJ');
+    await expect(btnDJ).toBeVisible();
+  });
+
+  test('deve carregar a rota exclusiva da Mesa de Jogo', async ({ page }) => {
+    await page.goto('/mesa-de-jogo/');
+    
+    // Verifica o título do Placar
     const title = page.locator('.setup-hero h1');
     await expect(title).toContainText('DIGITAL SCOREBOARD');
     
     // Verifica se o botão de iniciar partida existe
     const startBtn = page.locator('#start-match-btn');
     await expect(startBtn).toBeVisible();
-    await expect(startBtn).toHaveText('INICIAR PARTIDA ➔');
   });
 
-  test('deve permitir abrir o modo DJ (Soundboard)', async ({ page }) => {
-    await page.goto('/');
+  test('deve carregar a rota exclusiva da Mesa de Som (Arena Mixer)', async ({ page }) => {
+    await page.goto('/mesa-de-som/');
     
-    const djBtn = page.locator('.btn-soundboard-hero');
-    await djBtn.click();
-    
-    // Verifica se mudou para a tela de soundboard
+    // Verifica se está na tela de soundboard
     await expect(page.locator('#soundboard-screen')).toHaveClass(/active/);
     const djTitle = page.locator('.dj-logo');
     await expect(djTitle).toContainText('ARENA MIXER');

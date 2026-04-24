@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesa de Som | Ritmo de Jogo</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        /* Force the soundboard screen to take full height and be active */
+        body { margin: 0; padding: 0; background-color: #000; overflow: hidden; }
+        #app { height: 100vh; }
+        #soundboard-screen { display: block !important; height: 100vh; position: relative; }
+        .btn-dj-exit { display: none; /* Hide close button since it's a dedicated page now */ }
+    </style>
+</head>
+<body class="dark-theme">
+    <div id="app">
+        <!-- Tela 3: Mesa de Som Isolada (DJ MIXER) -->
+        <section id="soundboard-screen" class="screen active">
+            <div class="dj-console">
+                <header class="dj-header">
+                    <h1 class="dj-logo">ARENA <span>MIXER</span></h1>
+                    <div class="dj-status">READY // MASTER OUTPUT</div>
+                </header>
+
+                <div class="dj-main-layout">
+                    <!-- Esquerda: Pads de Som -->
+                    <div class="dj-pads-section" id="dj-pads-grid">
+                        <!-- Gerado via JS: Categorias e Pads -->
+                    </div>
+
+                    <!-- Direita: Fila e Master -->
+                    <aside class="dj-side-panel">
+                        <div class="dj-queue-container">
+                            <h3><span class="pulse-red">●</span> LIVE QUEUE</h3>
+                            <div id="dj-audio-queue" class="dj-queue-list">
+                                <!-- Sincronizado com a fila principal -->
+                            </div>
+                        </div>
+
+                        <div class="dj-master-controls">
+                            <button class="btn-dj-skip" onclick="SoundManager.skip()">SKIP TRACK ⏭️</button>
+                            <div class="dj-vumeter">
+                                <div class="vu-bar bar-1"></div><div class="vu-bar bar-2"></div>
+                                <div class="vu-bar bar-3"></div><div class="vu-bar bar-4"></div>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <audio id="buzzer-sound" src="/assets/buzzer.mp3" preload="auto"></audio>
+    <script type="module" src="/main.js"></script>
+</body>
+</html>

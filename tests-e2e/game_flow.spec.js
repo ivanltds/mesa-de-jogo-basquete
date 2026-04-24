@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('FIBA Scoreboard - Fluxo de Tempo e Períodos', () => {
   
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/mesa-de-jogo/');
     // Desativa animações para estabilidade nos testes
     await page.addStyleTag({ content: `
       *, *::before, *::after {

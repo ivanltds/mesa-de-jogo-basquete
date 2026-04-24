@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('FIBA Scoreboard - Fluxo de Partida e Setup', () => {
   
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/mesa-de-jogo/');
     await page.addStyleTag({ content: `
       *, *::before, *::after {
         animation-duration: 0s !important;
