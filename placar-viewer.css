@@ -1,0 +1,310 @@
+.viewer-body {
+    background: #050505;
+    margin: 0;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Outfit', 'Inter', sans-serif;
+    color: white;
+}
+
+#viewer-app {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.placar-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    justify-content: space-around;
+    align-items: center;
+    padding: 2rem;
+    box-sizing: border-box;
+}
+
+.team-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    padding: 2rem;
+    border-radius: 40px;
+}
+
+.team-name {
+    font-size: 3rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.score-display {
+    font-size: 15rem;
+    font-weight: 900;
+    line-height: 0.8;
+    text-shadow: 0 10px 50px rgba(0,0,0,0.8);
+}
+
+.center-section {
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.period-info {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #888;
+    background: rgba(255,255,255,0.05);
+    padding: 10px 30px;
+    border-radius: 50px;
+}
+
+.clock-display {
+    font-size: 6rem;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+}
+
+.shot-clock {
+    font-size: 4rem;
+    font-weight: 900;
+    color: #ff3d00;
+    background: rgba(255, 61, 0, 0.1);
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 4px solid #ff3d00;
+}
+
+/* Streaks & Fire Mode */
+.streak-badge {
+    position: absolute;
+    bottom: -40px;
+    background: linear-gradient(135deg, #ff9100, #ff3d00);
+    padding: 10px 30px;
+    border-radius: 50px;
+    font-weight: 900;
+    font-size: 1.2rem;
+    box-shadow: 0 10px 30px rgba(255, 61, 0, 0.4);
+    display: none;
+    animation: bounce 0.5s infinite alternate;
+}
+
+.streak-badge.active { display: block; }
+
+@keyframes bounce {
+    from { transform: translateY(0); }
+    to { transform: translateY(-10px); }
+}
+
+.team-section.on-fire {
+    background: radial-gradient(circle, rgba(255, 107, 0, 0.2) 0%, rgba(0, 0, 0, 0) 70%);
+    box-shadow: 0 0 100px rgba(255, 107, 0, 0.3);
+}
+
+.team-section.on-fire .score-display {
+    color: #ffab00;
+    text-shadow: 0 0 30px #ff6b00;
+    animation: burn 0.5s infinite alternate;
+}
+
+@keyframes burn {
+    from { text-shadow: 0 0 20px #ff6b00; }
+    to { text-shadow: 0 0 50px #ff6b00, 0 0 80px #ff3d00; }
+}
+
+.fire-banner {
+    position: absolute;
+    top: 40px;
+    width: 100%;
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 900;
+    color: #ffab00;
+    letter-spacing: 10px;
+    text-transform: uppercase;
+    display: none;
+    animation: slideDown 0.5s ease-out;
+}
+
+.fire-banner.active { display: block; }
+
+@keyframes slideDown {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Cesta Overlay */
+.score-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 107, 0, 0.1);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    pointer-events: none;
+}
+
+.score-overlay.active {
+    display: flex;
+    animation: flash 1s ease-out forwards;
+}
+
+@keyframes flash {
+    0% { background: rgba(255, 255, 255, 0.4); }
+    10% { background: rgba(255, 107, 0, 0.8); }
+    100% { background: rgba(0, 0, 0, 0); }
+}
+
+#overlay-text {
+    font-size: 15rem;
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 0 50px rgba(0,0,0,0.5);
+    transform: scale(0.5);
+    opacity: 0;
+}
+
+.score-overlay.active #overlay-text {
+    animation: textZoom 1s ease-out forwards;
+}
+
+@keyframes textZoom {
+    0% { transform: scale(0.5); opacity: 0; }
+    20% { transform: scale(1.2); opacity: 1; }
+    80% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* Timeout Overlay */
+.timeout-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.95);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    backdrop-filter: blur(20px);
+}
+
+.timeout-overlay.active {
+    display: flex;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.timeout-content {
+    text-align: center;
+}
+
+#timeout-team-title {
+    font-size: 4rem;
+    color: #ffab00;
+    letter-spacing: 10px;
+    margin-bottom: 2rem;
+    animation: pulse-glow 2s infinite;
+}
+
+#timeout-timer {
+    font-size: 15rem;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    color: white;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes pulse-glow {
+    0% { text-shadow: 0 0 20px rgba(255, 171, 0, 0.4); }
+    50% { text-shadow: 0 0 50px rgba(255, 171, 0, 0.8); }
+    100% { text-shadow: 0 0 20px rgba(255, 171, 0, 0.4); }
+}
+
+/* Event Overlay */
+.event-overlay {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    padding: 20px 60px;
+    border-radius: 20px;
+    display: none;
+    z-index: 150;
+    text-align: center;
+}
+
+.event-overlay.active {
+    display: block;
+    animation: slideDownFade 20s ease-in-out forwards;
+}
+
+#event-icon { font-size: 3rem; display: block; margin-bottom: 10px; }
+#event-title { font-size: 2.5rem; font-weight: 900; margin: 0; text-transform: uppercase; }
+#event-subtitle { font-size: 1.5rem; margin: 5px 0 0; opacity: 0.8; }
+
+@keyframes slideDownFade {
+    0% { transform: translate(-50%, -100%); opacity: 0; }
+    10% { transform: translate(-50%, 0); opacity: 1; }
+    90% { transform: translate(-50%, 0); opacity: 1; }
+    100% { transform: translate(-50%, -100%); opacity: 0; }
+}
+
+/* Responsividade */
+@media (max-width: 1024px) {
+    .score-display { font-size: 10rem; }
+    .team-name { font-size: 2rem; }
+    .clock-display { font-size: 4rem; }
+    .shot-clock { width: 80px; height: 80px; font-size: 2.5rem; }
+}
+
+@media (max-width: 768px) {
+    .placar-container {
+        flex-direction: column;
+        padding: 1rem;
+    }
+    .center-section {
+        order: -1;
+        width: 100%;
+        flex-direction: row;
+        gap: 1rem;
+        height: auto;
+        padding-top: 1rem;
+    }
+    .clock-display { font-size: 3rem; }
+    .shot-clock { width: 60px; height: 60px; font-size: 1.5rem; }
+    .score-display { font-size: 8rem; }
+    .team-name { font-size: 1.5rem; }
+    .period-info { font-size: 1rem; padding: 5px 15px; }
+    .team-section { padding: 1rem; }
+}

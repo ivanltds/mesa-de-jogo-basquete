@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLACAAR PÚBLICO - RITMO DE JOGO</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/placar-viewer.css">
+</head>
+<body class="viewer-body">
+    <div id="viewer-app">
+        <!-- Overlay de Cesta (Animação) -->
+        <div id="score-overlay" class="score-overlay">
+            <h1 id="overlay-text">CESTA!</h1>
+        </div>
+
+        <!-- Overlay de Tempo -->
+        <div id="timeout-overlay" class="timeout-overlay">
+            <div class="timeout-content">
+                <h2 id="timeout-team-title">PEDIDO DE TEMPO</h2>
+                <div id="timeout-timer">01:00</div>
+            </div>
+        </div>
+
+        <!-- Overlay de Eventos (Faltas/Subs) -->
+        <div id="event-overlay" class="event-overlay">
+            <div class="event-content">
+                <span id="event-icon">⚠️</span>
+                <h2 id="event-title">FALTA!</h2>
+                <p id="event-subtitle">NOME DO JOGADOR</p>
+            </div>
+        </div>
+
+        <main class="placar-container">
+            <div class="team-section home" id="viewer-home">
+                <div class="team-name" id="home-name">FLAMENGO</div>
+                <div class="score-display" id="home-score">0</div>
+                <div class="streak-badge" id="home-streak">🔥 3 SEGUIDAS!</div>
+            </div>
+
+            <div class="center-section">
+                <div class="period-info">
+                    <span id="viewer-period">1º PERÍODO</span>
+                </div>
+                <div class="clock-display" id="viewer-clock">10:00</div>
+                <div class="shot-clock" id="viewer-shot-clock">24</div>
+            </div>
+
+            <div class="team-section away" id="viewer-away">
+                <div class="team-name" id="away-name">FRANCA</div>
+                <div class="score-display" id="away-score">0</div>
+                <div class="streak-badge" id="away-streak">🔥 3 SEGUIDAS!</div>
+            </div>
+        </main>
+
+        <div id="fire-banner" class="fire-banner">
+            <span id="fire-text">TIME EM FOGO! 🔥🔥🔥</span>
+        </div>
+    </div>
+
+    <script type="module" src="/src/viewer/placar-viewer.js"></script>
+</body>
+</html>

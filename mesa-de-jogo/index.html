@@ -15,6 +15,9 @@
         <nav class="navbar">
             <div class="navbar-brand">RITMO DE <span>JOGO</span></div>
             <div id="nav-top">
+                <button id="share-btn" class="btn btn-primary btn-sm" style="border-radius: 30px; padding: 8px 16px; display: flex; align-items: center; gap: 8px;">
+                    <span>🔗</span> COMPARTILHAR
+                </button>
                 <div class="settings-menu" id="main-settings">
                     <button class="settings-toggle btn btn-ghost btn-sm" onclick="this.parentElement.classList.toggle('active')">
                         <span class="icon">⚙️</span> CONFIGURAÇÕES
@@ -23,7 +26,6 @@
                         <button id="restart-match-btn" class="btn btn-danger btn-sm full-width">REINICIAR PARTIDA</button>
                         <button id="audio-policy-btn" class="btn btn-primary btn-sm full-width">INTELIGÊNCIA DE ÁUDIO</button>
                         <button id="audio-scoring-btn" class="btn btn-warning btn-sm full-width">RELEVÂNCIA DE ÁUDIO</button>
-                        <button id="clear-all-btn" class="btn btn-ghost btn-sm full-width" style="color: #ff3d00;">LIMPAR TUDO</button>
                     </div>
                 </div>
             </div>
@@ -416,8 +418,9 @@
                                 <label>COMPETIÇÃO</label>
                                 <input type="text" id="input-competition" placeholder="Ex: NBB 2024" value="NBB 2024">
                             </div>
-                            <div style="display: flex; gap: 10px;">
-                                <button id="mock-data-btn" class="btn btn-secondary">TIMES DE TESTE</button>
+                            <div class="setup-actions">
+                                <button id="clear-all-btn" class="btn btn-danger-outline" title="Limpar Tudo">🗑️</button>
+                                <button id="mock-data-btn" class="btn btn-setup-secondary">🗄️ TIMES DE TESTE</button>
                                 <button class="btn-start-hero" id="start-match-btn">INICIAR PARTIDA ➔</button>
                             </div>
                         </div>
@@ -429,10 +432,10 @@
                                 <input type="text" id="home-name" placeholder="TIME CASA" class="team-name-input" value="FLAMENGO">
                                 <div class="color-picker-area">
                                     <label>COR DO TIME</label>
-                                    <div class="color-picker-simple" onclick="this.querySelector('input').click()">
+                                    <div class="color-picker-simple">
                                         <div class="color-preview-circle" id="home-color-preview" style="background: #ff0000"></div>
                                         <span>Escolher Cor</span>
-                                        <input type="color" id="home-color" value="#ff0000" style="display:none" oninput="UIManager.updateColorPreview('home', this.value)">
+                                        <input type="color" id="home-color" value="#ff0000" oninput="UIManager.updateColorPreview('home', this.value)">
                                     </div>
                                 </div>
                             </div>
@@ -451,10 +454,10 @@
                                 <input type="text" id="away-name" placeholder="TIME VISITANTE" class="team-name-input" value="FRANCA">
                                 <div class="color-picker-area">
                                     <label>COR DO TIME</label>
-                                    <div class="color-picker-simple" onclick="this.querySelector('input').click()">
+                                    <div class="color-picker-simple">
                                         <div class="color-preview-circle" id="away-color-preview" style="background: #2196f3"></div>
                                         <span>Escolher Cor</span>
-                                        <input type="color" id="away-color" value="#2196f3" style="display:none" oninput="UIManager.updateColorPreview('away', this.value)">
+                                        <input type="color" id="away-color" value="#2196f3" oninput="UIManager.updateColorPreview('away', this.value)">
                                     </div>
                                 </div>
                             </div>
@@ -659,6 +662,24 @@
                 <div class="modal-actions vertical-actions">
                     <button class="btn btn-primary btn-xl pulse-attention" id="confirm-continue-btn">CONTINUAR</button>
                     <button class="btn btn-secondary" id="recovery-restart-btn">REINICIAR TUDO</button>
+                </div>
+            </div>
+        </div>
+        <!-- Modal de Compartilhamento -->
+        <div id="share-modal" class="modal">
+            <div class="modal-content glass-card alert-modal">
+                <div class="modal-header">
+                    <span class="modal-icon">🔗</span>
+                    <h2>Compartilhar Placar</h2>
+                    <p>O link do placar público foi copiado para sua área de transferência!</p>
+                </div>
+                <div class="modal-actions" style="flex-direction: column; gap: 10px;">
+                    <a id="open-public-btn" href="/placar/" target="_blank" class="btn btn-primary full-width" style="text-decoration: none; display: flex; justify-content: center; align-items: center; height: 60px;">
+                        ABRIR VISUALIZAÇÃO PÚBLICA ➔
+                    </a>
+                    <button class="btn btn-secondary full-width" onclick="document.getElementById('share-modal').classList.remove('active')" style="height: 60px;">
+                        FECHAR
+                    </button>
                 </div>
             </div>
         </div>

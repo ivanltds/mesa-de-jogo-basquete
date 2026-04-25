@@ -269,7 +269,20 @@ body {
 .player-actions {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    width: 100%;
+    margin-top: 5px;
+}
+
+.player-actions .btn {
+    flex: 1;
+    white-space: nowrap;
+    padding: 8px 5px !important;
+    font-size: 0.8rem !important;
+}
+
+.player-actions .btn-team {
+    font-weight: 800;
 }
 
 .player-match-card.disqualified {
@@ -1025,7 +1038,54 @@ body {
 
 
 .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 1.5rem 2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.5); margin-bottom: 1rem; }
-.form-group-row { display: flex; align-items: center; gap: 20px; width: 100%; }
+.form-group-row { display: flex; align-items: flex-end; gap: 20px; width: 100%; }
+.setup-actions { display: flex; gap: 10px; align-items: center; }
+
+.btn-setup-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 0 25px;
+    border-radius: 14px;
+    height: 60px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-setup-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.btn-danger-outline {
+    background: transparent;
+    border: 1px solid rgba(255, 61, 0, 0.3);
+    color: #ff3d00;
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-danger-outline:hover {
+    background: rgba(255, 61, 0, 0.1);
+    border-color: #ff3d00;
+    transform: translateY(-2px);
+}
+
 .input-wrap { flex: 1; display: flex; flex-direction: column; gap: 5px; }
 .input-wrap label { display: block; font-size: 0.7rem; color: rgba(255, 255, 255, 0.5); font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
 #input-competition { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 12px 20px; color: #fff; font-size: 1.2rem; font-weight: 600; width: 100%; transition: 0.3s; height: 60px; }
@@ -1160,11 +1220,7 @@ body {
 .custom-color-input:hover { transform: scale(1.1); border-color: #fff; }
 .custom-color-input.active { border-color: #fff; transform: scale(1.1); box-shadow: 0 0 15px rgba(255,255,255,0.3); }
 
-/* Ajustes de Alinhamento dos Cards de Jogadores */
-.player-match-card .p-info { display: grid; grid-template-columns: 40px 1fr 50px; align-items: center; gap: 10px; width: 100%; margin-bottom: 10px; }
-.player-match-card .p-name { font-size: 0.9rem; line-height: 1.1; white-space: normal; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-align: left; }
-.player-match-card .p-num { font-weight: 900; font-size: 1.2rem; }
-.player-match-card .p-fouls { font-weight: 800; text-align: right; background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 6px; min-width: 45px; }
+/* Estilos de Card de Jogador foram movidos para a seção de melhorias ao final do arquivo */
 
 /* Ajustes do Modal de SubstituiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£o */
 .sub-item { display: grid !important; grid-template-columns: 40px 1fr 50px; align-items: center; gap: 15px; padding: 12px 20px; border-radius: 10px; margin-bottom: 8px; background: rgba(255,255,255,0.05); transition: 0.2s; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); }
@@ -2005,26 +2061,49 @@ body {
 
 .player-match-card .p-info {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     width: 100%;
+    gap: 15px;
 }
 
 .p-meta {
     display: flex;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.p-num {
+    font-size: 0.8rem;
+    font-weight: 900;
+    opacity: 0.8;
+    letter-spacing: 1px;
+}
+
+.p-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.p-fouls-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
 }
 
 .p-fouls-badge {
-    background: #2a2a2a;
-    padding: 4px 10px;
-    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 6px 12px;
+    border-radius: 8px;
     font-weight: 900;
-    font-size: 1.1rem;
-    min-width: 50px;
+    font-size: 1.2rem;
+    min-width: 55px;
     text-align: center;
     border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+    color: #fff;
 }
 
 .bonus-indicator {
@@ -2155,6 +2234,7 @@ body {
 
 /* Color Picker Simplified */
 .color-picker-simple {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -2164,6 +2244,19 @@ body {
     border: 1px solid rgba(255,255,255,0.1);
     cursor: pointer;
     transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+.color-picker-simple input[type="color"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    border: none;
+    padding: 0;
 }
 
 .color-picker-simple:hover {

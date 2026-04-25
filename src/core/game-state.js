@@ -1,6 +1,9 @@
 export const gameState = {
     clock: 600000,
     shotClock: 24000,
+    timeoutClock: 0,
+    isTimeoutActive: false,
+    lastUpdate: Date.now(),
     isActive: false,
     period: 1,
     possession: 'home',

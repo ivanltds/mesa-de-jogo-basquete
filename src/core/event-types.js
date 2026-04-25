@@ -11,6 +11,7 @@ export const EVENT_TYPES = {
     GAME_END: 'game.end',
     SHOT_CLOCK_VIOLATION: 'shotclock.violation',
     TIMEOUT: 'timeout',
+    TIMEOUT_END: 'timeout.end',
     POSSE_24: 'posse_24',
     POSSE_14: 'posse_14',
     COUNTDOWN_1M: 'countdown_1m',

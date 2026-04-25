@@ -1,0 +1,274 @@
+Perfeito — vamos montar um **plano de implementação bem detalhado para a URL pública de visualização do placar**, já pensando em animações, regras de “pegar fogo” e streak de 3 cestas, e tudo com responsividade para celular. O plano assume que o estado atual do jogo já está num objeto centralizado (`gameState`) e que você já separa telas, então essa view de espectador pode ser uma rota `/placar` simples e limpa, somente leitura. [scoreleader](https://scoreleader.com/basketball-scoreboard/)
+
+***
+
+## Objetivo
+
+Criar uma **página pública de visualização do placar** (`/placar` ou `?view=placar`) que:
+- mostra o placar em tempo real;  
+- destaca o time em vantagem;  
+- anima cada cesta feita;  
+- ativa efeito “pegar fogo” quando um time abrir vantagem acima de X pontos;  
+- ativa destaque especial quando um time fizer 3 cestas seguidas (sem resposta do outro time);  
+- seja **totalmente responsiva** para celular, tablet e TV. [mobirise](https://mobirise.com/bootstrap-template/scoreboard-template.html)
+
+O operador continua na mesa de jogo; o público só consome o estado via essa URL.
+
+***
+
+## Escopo
+
+### Está dentro do escopo
+
+- criar uma rota/view de placar público;  
+- projetar o layout responsivo (mobile, desktop, TV);  
+- definir animações de placar e de cesta;  
+- implementar regra de vantagem “pegar fogo”;  
+- implementar regra de streak de 3 cestas;  
+- consumir dados de `gameState` ou de um estado público derivado;  
+- garantir que a página seja leitura apenas (sem botões de operação);  
+- documentar o contrato de dados entre mesa e visão de público. [scoreleader](https://scoreleader.com/basketball-scoreboard/)
+
+### Está fora do escopo
+
+- backend de login / autenticação na visualização de placar;  
+- histórico completo de eventos na página pública;  
+- edição de placar diretamente por essa URL;  
+- overlays para OBS/Streaming (pode ser um módulo separado depois). [keepthescore](https://keepthescore.com/basketball-scoreboard/)
+
+***
+
+## Arquitetura sugerida
+
+### 1. Estado de origem
+
+Usar o mesmo estado de `gameState` (ou um `publicGameState` derivado) que você já tem no core, só exposto em formato de leitura para a view de placar.  
+- placar dos times;  
+- período e tempo;  
+- lista de eventos recentes (para reconstruir sequência de cestas). [github](https://github.com/Attnam/ivan/commit/295efb42e0bfd357afe23d4804c24cc2ad429fec)
+
+### 2. Rota da visualização
+
+- `/placar` ou `/?view=placar` como URL pública;  
+- página leve, sem menu de operação, só o placar grande e as animações;  
+- sem rotas extras (ex.: `/config`, `/admin`).
+
+### 3. Comunicação com a mesa
+
+- se estiver tudo no mesmo app, simplesmente expor o estado via JavaScript;  
+- se quiser desacoplar, pode usar:
+  - API fake real time (ex.: `setInterval` puxando `gameState` ou um `ViewBridge` que publica snapshots), ou  
+  - WebSocket mais simples depois, quando escalar. [sitepoint](https://www.sitepoint.com/building-live-score-widget-using-php-web-sockets/)
+
+A ideia é manter máximo reaproveitamento e mínimo backend.
+
+***
+
+## Contrato de dados público
+
+A página de placar deve receber um objeto tipo:
+
+```js
+{
+  home: {
+    name: "CASA",
+    score: 102,
+    color: "#ff6b00"
+  },
+  away: {
+    name: "VISITANTE",
+    score: 88,
+    color: "#2196f3"
+  },
+  period: 4,
+  clock: 60000,             // 60s
+  shotClock: 14000,         // 14s
+  scoreHistory: [           // últimos 20-30 eventos apenas
+    { team: "home", value: 2, at: 1745610000000 },
+    { team: "away", value: 3, at: 1745610000500 },
+    ...
+  ],
+  fireMode: true,          // se time está “on fire”
+  scoreStreak: 3            // streak de 3 cestas sem resposta
+}
+```
+
+Você pode derivar `scoreStreak`, `scoreDiff` e `fireMode` em `selectors` ou no `publicGameState` para economizar repetição de lógica. [github](https://github.com/Attnam/ivan/commit/295efb42e0bfd357afe23d4804c24cc2ad429fec)
+
+***
+
+## Regras de animação
+
+### 1. Animação de cesta
+
+- toda vez que houver novo evento `SCORE_MADE`, a equipe correspondente recebe uma **breve animação de destaque** no placar;
+- efeito sugerido:  
+  - borda pisca ou escala;
+  - pontuação sobe levemente com easing;
+  - nome do time brilha/frase “Cesta!” pode aparecer por 1s.
+
+Você pode usar `addPoints` no lado da mesa para disparar algum evento personalizado que a view de placar reage, sem depender da UI operacional. [youtube](https://www.youtube.com/watch?v=l0-TEiNzuME)
+
+### 2. “Pegar fogo” por diferença de pontuação
+
+- se a diferença de pontos entre os times for **maior ou igual a N** (ex.: 15 pontos) e o time mantiver a vantagem, essa equipe entra em `fireMode = true`;
+- o time em vantagem terá:
+  - barra de placar com efeito de fogo/gradiente de calor animado;
+  - ícone de fogo ou chama ao lado do placar;
+  - animação de leve tremor ou brilho suave enquanto o modo estiver ativo. [freepik](https://www.freepik.com/free-photos-vectors/basketball-fire-score)
+
+Quando a diferença cair abaixo do limiar, o `fireMode` volta a `false` e o efeito some.
+
+### 3. Streak de 3 cestas seguidas
+
+- rastrear o histórico de `scoreHistory` e contar quantas cestas o mesmo time fez em sequência sem resposta do outro time;
+- se chegar a **3 consecutivas**, ativar:
+  - `scoreStreak = 3`;
+  - animação especial de streak (ex.: barra de streak horizontal, confete, efeito de calor por 3s); [mobirise](https://mobirise.com/bootstrap-template/scoreboard-template.html)
+
+Quando o outro time pontuar, o streak zera.
+
+***
+
+## Layout responsivo
+
+### 1. Desktop e TV
+
+- layout horizontal, com placar grande no centro, nomes das equipes grandes e destaque de placar em fogo na parte superior;
+- efeitos de animação suportam o tamanho de tela sem poluição visual.
+
+### 2. Mobile (celular)
+
+- layout vertical, empilhado:
+  - topo: nomes dos times e placar, grande o suficiente para ler mesmo de longe;
+  - abaixo: efeito de fogo e streak;
+  - sem muitos detalhes desnecessários; [keepthescore](https://keepthescore.com/docs/scoreboard-customization/)
+
+- tipografia legível, shadows para legibilidade em fotos de celular tiradas em ambiente escuro;
+- evitar muitos elementos decorativos pequenos que não serão vistos.
+
+### 3. Requisitos de responsividade
+
+- usar `@media` queries ou CSS flex/grid responsivo;
+- evitar layout fixo em pixels;
+- garantir que o placar seja o maior elemento na tela, tanto em mobile quanto em TV.
+
+***
+
+## Detalhamento técnico da implementação
+
+### 1. Rota/view pública
+
+- criar:
+  - `src/viewer/placar-viewer.html` (ou `public/placar.html`);
+  - `src/viewer/placar-viewer.js` (ou `public/placar-viewer.js`).  
+- a página só importa:
+  - o CSS do placar responsivo;
+  - o script de leitura de `gameState` ou de `publicGameState`. [mobirise](https://mobirise.com/bootstrap-template/scoreboard-template.html)
+
+### 2. Leitura de estado
+
+- na página de placar:
+  - esperar `gameState` no global `window` (ou usar um `ViewDataProvider` mockado);
+  - mapear `gameState` para `viewState` com `scoreDiff`, `fireMode`, `scoreStreak`.
+
+Exemplo mapeamento de estado (cliente):
+
+```js
+function computePlacarView(gameState) {
+  const h = gameState.teams.home;
+  const a = gameState.teams.away;
+  const scoreDiff = Math.abs(h.score - a.score);
+
+  const fireMode = scoreDiff >= 15;
+  const fireTeam = h.score > a.score ? "home" : "away";
+
+  // Só últimos N eventos
+  const recentScoreEvents = gameState.events
+    .filter(e => e.type === "score.made")
+    .slice(-30);
+
+  const scoreStreak = computeStreak(recentScoreEvents);
+
+  return {
+    home: { name: h.name, score: h.score, color: h.color },
+    away: { name: a.name, score: a.score, color: a.color },
+    period: gameState.period,
+    clock: gameState.clock,
+    shotClock: gameState.shotClock,
+    fireMode,
+    fireTeam,
+    scoreStreak
+  };
+}
+```
+
+Isso já deixa a lógica de “fogo” e de streak na camada de visualização, alimentada pelo estado que a mesa já gera. [github](https://github.com/Attnam/ivan/commit/295efb42e0bfd357afe23d4804c24cc2ad429fec)
+
+### 3. Animações via classes
+
+- utilizar `class="fire"`, `class="streak active"`, `class="score-flash"` etc.;
+- adicionar/alterar essas classes no DOM sempre que o `viewState` mudar;
+- usar Transitions e Keyframes CSS para smoothness, ao invés de JS puramente imperativo.
+
+Exemplo:
+
+```css
+.score-team.fire {
+  background: linear-gradient(45deg, red, orange, yellow);
+  border: 3px solid #ffd700;
+  text-shadow: 0 0 15px rgba(255, 165, 0, 0.8);
+  animation: fire-pulse 1.5s infinite;
+}
+```
+
+### 4. Atualização do DOM
+
+- na `placar-viewer.js`:
+  - função `render(viewState)` que atualiza o DOM com base no `viewState`;
+  - função `animateScoreChange(lastView, newView)` que dispara a animação de cesta.
+
+Se quiser, esse `render` pode ser chamado periodicamente (ex.: `setInterval(100ms, () => render(computePlacarView(gameState)))`) ou, no futuro, via WebSocket push. [medium.datadriveninvestor](https://medium.datadriveninvestor.com/live-cricket-score-via-webhook-firebase-websocket-from-roanuz-sports-45d82a029f1f)
+
+***
+
+## UI/UX do espectador
+
+### Textos e microcopy
+
+- manter o mínimo de texto: nomes de time, placar, período e eventos visuais;
+- se quiser, adicionar:
+  - `home.fireMode && "🔥 EM FOGO!"` sob o nome do time;
+  - `home.scoreStreak === 3 && "🔥 3 CESTAS SEGUIDAS!"` como banner curto.
+
+Tudo em **português simples**, evitando jargão técnico. [peacocktv](https://www.peacocktv.com/blog/peacock-performance-view-experience-the-nba-like-never-before)
+
+### Cores e efeitos de `fireMode`
+
+- reforçar a cor dominante do time com gradiente de fogo;
+- cores de chama: de amarelo a laranja e vermelho;
+- efeito de pulso ou respiração suave via `animation`.
+
+***
+
+## Testes e critérios de aceitação
+
+- [ ] a página `/placar` mostra placar atualizado em tempo real;
+- [ ] nomes e cores dos times são exibidos conforme `gameState.teams`;
+- [ ] toda cesta feita (via `addPoints`) provoca uma animação visível no placar do time correspondente;
+- [ ] quando a diferença for ≥ 15 pontos, o time em vantagem entra em `fireMode` visual (fogo/gradiente/brilho);
+- [ ] quando o outro time pontua e a diferença volta abaixo de 15, `fireMode` desaparece;
+- [ ] uma sequência de 3 cestas do mesmo time dispara o efeito de `streak`;
+- [ ] o layout é limpo e legível em celular, tablet e TV;
+- [ ] a página não tem botões de edição ou operação da mesa.
+
+***
+
+## Benefício de valor para espectador
+
+- acompanhar o jogo rapidamente, mesmo sem entender bem o esporte;
+- identificar “quem está dominando” e “quem está em boa sequência” só pela animação;
+- interagir indiretamente com o jogo por meio de reações visuais, aumentando o feeling de participação. [peacocktv](https://www.peacocktv.com/blog/peacock-performance-view-experience-the-nba-like-never-before)
+
+***
+

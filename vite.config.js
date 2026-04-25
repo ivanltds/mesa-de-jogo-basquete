@@ -8,6 +8,7 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         mesa: resolve(__dirname, 'mesa-de-jogo/index.html'),
         som: resolve(__dirname, 'mesa-de-som/index.html'),
+        placar: resolve(__dirname, 'placar/index.html'),
       },
     },
   },

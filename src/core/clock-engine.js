@@ -9,7 +9,23 @@ export const ClockEngine = {
     start() {
         if (gameState.isActive) return;
         gameState.isActive = true;
+        gameState.lastUpdate = Date.now();
         this.timer = setInterval(() => {
+            gameState.lastUpdate = Date.now();
+            
+            // If timeout is active, countdown the timeout clock
+            if (gameState.isTimeoutActive) {
+                if (gameState.timeoutClock > 0) {
+                    gameState.timeoutClock -= 100;
+                } else {
+                    gameState.isTimeoutActive = false;
+                    window.notify("TEMPO ENCERRADO!");
+                    dispatchGameEvent(EVENT_TYPES.TIMEOUT_END, { message: "FIM DO TEMPO", icon: "⌛" });
+                }
+                window.UIManager.updateClocks();
+                return;
+            }
+
             if (gameState.clock > 0) {
                 gameState.clock -= 100;
                 gameState.shotClock -= 100;
@@ -55,6 +71,7 @@ export const ClockEngine = {
     },
     stop() {
         gameState.isActive = false;
+        gameState.lastUpdate = Date.now();
         clearInterval(this.timer);
         window.UIManager.updateClocks();
     },

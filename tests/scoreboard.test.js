@@ -182,13 +182,12 @@ describe('FIBA Digital Scoreboard - Suíte Completa de Estabilização', () => {
             expect(item.category).toBe('cesta');
         });
 
-        it('6.2 deve pular o áudio atual corretamente', () => {
+        it('6.2 deve interromper o áudio anterior ao tocar um novo para não perder time', () => {
             SoundManager.play('cesta');
+            expect(SoundManager.currentItem.category).toBe('cesta');
+            
             SoundManager.play('toco');
-            SoundManager.skip();
-            // skip() clears currentItem and shifts queue
-            // So 'toco' should now be in currentItem
-            expect(SoundManager.currentItem).toBeDefined();
+            // Com a nova regra de interrupção, o 'toco' deve assumir o lugar imediatamente
             expect(SoundManager.currentItem.category).toBe('toco');
         });
 

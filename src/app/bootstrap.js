@@ -77,6 +77,8 @@ export const addFoul = (team, num) => {
         if (p.fouls >= 5) {
             window.notify(`JOGADOR #${num} EXCLUÍDO (5 FALTAS)!`, 'error');
         }
+        ClockEngine.stop(); // FIBA RULE: Falta pausa o jogo
+        
         UIManager.updateScoreboard();
         window.saveState();
     }
@@ -85,11 +87,19 @@ window.addFoul = addFoul;
 
 export const addTimeout = (team) => {
     if (gameState.teams[team].timeouts >= 5) return window.notify("Limite de tempos atingido!");
+    
+    ClockEngine.stop(); // Para o cronômetro do jogo
     gameState.teams[team].timeouts++;
-    GameEngine.logEvent(`TEMPO: ${gameState.teams[team].name}`, 'timeout', team, null, 0, null, null, false);
+    gameState.timeoutClock = 60000; // 1 minuto
+    gameState.isTimeoutActive = true;
+
+    GameEngine.logEvent(`TEMPO: ${gameState.teams[team].name}`, EVENT_TYPES.TIMEOUT, { teamKey: team });
     
     // Trigger official buzzer if configured for timeout
     window.triggerAudio(EVENT_TYPES.TIMEOUT);
+    
+    // Inicia o cronômetro para o tempo (usando o mesmo loop do ClockEngine)
+    ClockEngine.start();
     
     UIManager.updateScoreboard();
     window.saveState();
@@ -426,6 +436,22 @@ document.addEventListener('DOMContentLoaded', () => {
         clearAllBtn.onclick = () => {
             const modal = document.getElementById('clear-all-modal');
             if (modal) modal.classList.add('active');
+        };
+    }
+
+    const shareBtn = document.getElementById('share-btn');
+    if (shareBtn) {
+        shareBtn.onclick = () => {
+            const publicUrl = window.location.origin + '/placar/';
+            navigator.clipboard.writeText(publicUrl).then(() => {
+                const modal = document.getElementById('share-modal');
+                if (modal) modal.classList.add('active');
+                window.notify("Link copiado para a área de transferência!");
+            }).catch(err => {
+                console.error('Erro ao copiar link:', err);
+                const modal = document.getElementById('share-modal');
+                if (modal) modal.classList.add('active');
+            });
         };
     }
 

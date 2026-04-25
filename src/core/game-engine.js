@@ -28,7 +28,7 @@ export const GameEngine = {
         else if (type === 'sub') eventType = EVENT_TYPES.SUBSTITUTION;
         else if (type === 'timeout') eventType = EVENT_TYPES.TIMEOUT;
 
-        dispatchGameEvent(eventType, {
+        const payload = {
             message,
             icon,
             teamKey,
@@ -37,7 +37,26 @@ export const GameEngine = {
             pInNum,
             pOutNum,
             isExclusion
-        });
+        };
+
+        // Enrichment with names
+        if (teamKey) {
+            const team = gameState.teams[teamKey];
+            if (playerNum) {
+                const p = team.players.find(x => x.number == playerNum);
+                if (p) payload.playerName = p.name;
+            }
+            if (pInNum) {
+                const pIn = team.players.find(x => x.number == pInNum);
+                if (pIn) payload.playerNameIn = pIn.name;
+            }
+            if (pOutNum) {
+                const pOut = team.players.find(x => x.number == pOutNum);
+                if (pOut) payload.playerNameOut = pOut.name;
+            }
+        }
+
+        dispatchGameEvent(eventType, payload);
     },
 
     endGame() {

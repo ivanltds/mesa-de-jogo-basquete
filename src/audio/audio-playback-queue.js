@@ -29,7 +29,7 @@ export const AudioPlaybackQueue = {
         }
     },
 
-    // Updated addToQueue to support priority
+    // Updated addToQueue to support priority and immediate interruption
     addToQueue(category, file, priority = 5, assetId = null, sourceEventId = null) {
         const item = {
             id: crypto.randomUUID(),
@@ -48,6 +48,14 @@ export const AudioPlaybackQueue = {
         
         if (window.UIManager) window.UIManager.renderSoundQueue();
         
+        // INTERRUPÇÃO: Se já estiver tocando, para o atual para iniciar o próximo imediatamente
+        if (this.isPlaying && this.currentAudio) {
+            this.currentAudio.onended = null; // Remove listener para não disparar processQueue duplicado
+            this.currentAudio.pause();
+            this.isPlaying = false;
+            this.currentAudio = null;
+        }
+
         if (!this.isPlaying) {
             this.processQueue();
         }
