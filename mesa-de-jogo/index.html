@@ -3,35 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RITIMO DE JOGO</title>
+    <title>RITMO DE JOGO</title>
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="stylesheet" href="/style.css">
-    <script>document.title = 'RITIMO DE JOGO';</script>
+    <script>document.title = 'RITMO DE JOGO';</script>
 </head>
 <body class="dark-theme">
     <div id="app">
         <div id="toast-container"></div>
 
-        <div id="dev-tools">
-            <button id="mock-data-btn" class="btn btn-secondary btn-sm">TIMES DE TESTE</button>
-            <button id="restart-match-btn" class="btn btn-danger btn-sm">REINICIAR PARTIDA</button>
-            <button id="audio-policy-btn" class="btn btn-primary btn-sm">GESTÃO DE ÁUDIO</button>
-            <button id="audio-scoring-btn" class="btn btn-warning btn-sm">SCORE DE ÁUDIO</button>
-        </div>
+        <nav class="navbar">
+            <div class="navbar-brand">RITMO DE <span>JOGO</span></div>
+            <div id="nav-top">
+                <div class="settings-menu" id="main-settings">
+                    <button class="settings-toggle btn btn-ghost btn-sm" onclick="this.parentElement.classList.toggle('active')">
+                        <span class="icon">⚙️</span> CONFIGURAÇÕES
+                    </button>
+                    <div class="settings-dropdown glass-card">
+                        <button id="restart-match-btn" class="btn btn-danger btn-sm full-width">REINICIAR PARTIDA</button>
+                        <button id="audio-policy-btn" class="btn btn-primary btn-sm full-width">INTELIGÊNCIA DE ÁUDIO</button>
+                        <button id="audio-scoring-btn" class="btn btn-warning btn-sm full-width">RELEVÂNCIA DE ÁUDIO</button>
+                        <button id="clear-all-btn" class="btn btn-ghost btn-sm full-width" style="color: #ff3d00;">LIMPAR TUDO</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
 
         <!-- Tela 4: Gestão de Áudio (Novo) -->
         <!-- Tela 4: Inteligência Sonora (Redesenhada) -->
         <section id="audio-policy-screen" class="screen">
             <div class="policy-container glass-card">
                 <header class="policy-header">
-                    <div class="policy-badge">SMART SOUNDTRACK</div>
-                    <h1>INTELIGÊNCIA <span>SONORA</span></h1>
-                    <p>Configure como o assistente de áudio deve reagir a cada momento do jogo.</p>
+                    <div class="policy-badge">AUTOMAÇÃO DE ÁUDIO ATIVA</div>
+                    <h1>INTELIGÊNCIA <span>DE ÁUDIO</span></h1>
+                    <p>Defina como o sistema reage em cada tela e evento do jogo.</p>
                 </header>
                 
                 <main class="policy-layout">
                     <div class="policy-nav">
-                        <label>AMBIENTE ATIVO</label>
+                        <label>ONDE AJUSTAR O ÁUDIO?</label>
+                        <p class="section-desc">Escolha a área do sistema para aplicar estas regras.</p>
                         <div id="policy-screen-selector" class="screen-tiles">
                             <!-- Preenchido via JS: Tiles das telas -->
                         </div>
@@ -45,16 +56,16 @@
                             <div class="policy-switches">
                                 <div class="switch-item" id="toggle-auto-audio">
                                     <div class="switch-text">
-                                        <strong>Assistente Automático</strong>
-                                        <span>Dispara sons sozinho baseado nos eventos do jogo.</span>
+                                        <strong>Permitir sons automáticos nesta tela</strong>
+                                        <span>Quando ligado, o sistema toca sons sozinho em eventos do jogo.</span>
                                     </div>
                                     <input type="checkbox" id="policy-allow-auto" hidden>
                                     <div class="switch-ui"></div>
                                 </div>
                                 <div class="switch-item" id="toggle-manual-priority">
                                     <div class="switch-text">
-                                        <strong>Prioridade Manual (DJ)</strong>
-                                        <span>Sons manuais cortam o som automático imediatamente.</span>
+                                        <strong>O comando manual tem prioridade</strong>
+                                        <span>Quando você toca um som manualmente, ele pode interromper o som atual.</span>
                                     </div>
                                     <input type="checkbox" id="policy-manual-priority" hidden>
                                     <div class="switch-ui"></div>
@@ -64,23 +75,25 @@
 
                         <!-- Card: Inteligência de Eventos Unified -->
                         <div class="policy-card full-width" id="card-events-unified">
-                            <h3><span class="card-icon">📢</span> REAÇÃO A EVENTOS</h3>
+                            <h3><span class="card-icon">📢</span> REGRAS POR EVENTO</h3>
+                            <p class="section-desc">Defina como o sistema reage a cada tipo de acontecimento.</p>
                             
                             <div class="events-group-grid">
                                 <!-- Grupo 1: Cestas -->
                                 <div class="events-subgroup">
-                                    <h4>🎯 EVENTOS DE CESTA</h4>
+                                    <h4>🎯 REGRAS DE CESTA</h4>
+                                    <p class="section-desc">Defina o comportamento para 1, 2 ou 3 pontos.</p>
                                     <div class="score-tiles">
                                         <div class="score-tile">
-                                            <div class="tile-label">LANCE LIVRE (+1)</div>
+                                            <div class="tile-label">CESTA DE 1 PONTO</div>
                                             <select id="score-map-1" class="tile-select"></select>
                                         </div>
                                         <div class="score-tile">
-                                            <div class="tile-label">CESTA CAMPO (+2)</div>
+                                            <div class="tile-label">CESTA DE 2 PONTOS</div>
                                             <select id="score-map-2" class="tile-select"></select>
                                         </div>
                                         <div class="score-tile premium">
-                                            <div class="tile-label">BOLA DE TRÊS (+3)</div>
+                                            <div class="tile-label">CESTA DE 3 PONTOS</div>
                                             <select id="score-map-3" class="tile-select"></select>
                                         </div>
                                     </div>
@@ -91,11 +104,11 @@
                                     <h4>⏱️ EVENTOS DE POSSE</h4>
                                     <div class="score-tiles">
                                         <div class="score-tile">
-                                            <div class="tile-label">REINÍCIO 24s</div>
+                                            <div class="tile-label">REPOSIÇÃO / 24 SEGUNDOS</div>
                                             <select id="event-map-posse_24" class="tile-select"></select>
                                         </div>
                                         <div class="score-tile">
-                                            <div class="tile-label">REINÍCIO 14s</div>
+                                            <div class="tile-label">REPOSIÇÃO / 14 SEGUNDOS</div>
                                             <select id="event-map-posse_14" class="tile-select"></select>
                                         </div>
                                     </div>
@@ -110,15 +123,15 @@
                                             <select id="event-map-period_end" class="tile-select"></select>
                                         </div>
                                         <div class="score-tile">
-                                            <div class="tile-label">1 MIN RESTANTE</div>
+                                            <div class="tile-label">ÚLTIMO MINUTO</div>
                                             <select id="event-map-countdown_1m" class="tile-select"></select>
                                         </div>
                                         <div class="score-tile">
-                                            <div class="tile-label">24s RESTANTES</div>
+                                            <div class="tile-label">AVISO DOS 24 SEGUNDOS</div>
                                             <select id="event-map-countdown_24s" class="tile-select"></select>
                                         </div>
                                         <div class="score-tile">
-                                            <div class="tile-label">10s RESTANTES</div>
+                                            <div class="tile-label">ÚLTIMOS 10 SEGUNDOS</div>
                                             <select id="event-map-countdown_10s" class="tile-select"></select>
                                         </div>
                                         <div class="score-tile">
@@ -151,8 +164,8 @@
 
                         <!-- Card 3: Filtro de Humor -->
                         <div class="policy-card full-width">
-                            <h3><span class="card-icon">📻</span> CATÁLOGO DE SONS DISPONÍVEIS</h3>
-                            <p class="section-desc">Ative ou desative categorias inteiras de sons para este ambiente.</p>
+                            <h3><span class="card-icon">📻</span> CATEGORIAS BLOQUEADAS</h3>
+                            <p class="section-desc">Desligue as categorias de som que não devem tocar aqui.</p>
                             <div id="category-toggles" class="mood-grid">
                                 <!-- Preenchido via JS -->
                             </div>
@@ -161,8 +174,8 @@
                 </main>
 
                 <div class="policy-actions">
-                    <button class="btn btn-ghost" onclick="UIManager.switchScreen('match-screen')">CANCELAR</button>
-                    <button class="btn btn-primary" id="save-policy-btn">APLICAR CONFIGURAÇÕES</button>
+                    <button class="btn btn-ghost" onclick="UIManager.switchScreen('match-screen')">FECHAR</button>
+                    <button class="btn btn-primary" id="save-policy-btn">SALVAR MUDANÇAS</button>
                 </div>
             </div>
         </section>
@@ -171,35 +184,36 @@
         <section id="audio-scoring-screen" class="screen">
             <div class="scoring-container glass-card">
                 <header class="scoring-header">
-                    <div class="scoring-badge">DECISION ENGINE</div>
-                    <h1>GESTÃO DE <span>SCORE</span></h1>
-                    <p>Controle os pesos do algoritmo de seleção e simule decisões de áudio.</p>
+                    <div class="scoring-badge">ALGORITMO DE SELEÇÃO</div>
+                    <h1>RELEVÂNCIA <span>DE ÁUDIO</span></h1>
+                    <p>Ajuste os pesos que o sistema usa para escolher o melhor áudio para cada momento.</p>
                 </header>
                 
                 <main class="scoring-layout">
                     <!-- Bloco A: Regras de Score -->
                     <div class="scoring-panel rules-panel">
                         <div class="panel-header">
-                            <h3><span class="panel-icon">⚙️</span> PESOS DO ALGORITMO</h3>
+                            <h3><span class="panel-icon">⚙️</span> O QUE INFLUENCIA A ESCOLHA</h3>
                             <div class="panel-actions">
-                                <button class="btn btn-sm btn-outline" id="reset-rules-btn">RESET DEFAULT</button>
+                                <button class="btn btn-sm btn-outline" id="reset-rules-btn">RESETAR PADRÃO</button>
                             </div>
                         </div>
+                        <p class="section-desc" style="padding: 0 1.2rem; margin-top: 0.5rem;">Defina o que deve pesar mais na hora de escolher um áudio.</p>
                         
                         <div class="rules-scroll-area">
                             <form id="scoring-rules-form">
                                 <div class="rule-group">
                                     <h4>CONTEXTO / CESTAS</h4>
                                     <div class="rule-field">
-                                        <label>Bônus Cesta de 3</label>
+                                        <label>Dar mais peso para cesta de 3 pontos</label>
                                         <input type="number" name="context.scoreMade.threePointBonus" step="1">
                                     </div>
                                     <div class="rule-field">
-                                        <label>Bônus Jogo Próximo</label>
+                                        <label>Dar mais peso para jogo apertado</label>
                                         <input type="number" name="context.scoreMade.closeGameBonus" step="1">
                                     </div>
                                     <div class="rule-field">
-                                        <label>Bônus Tag Clutch</label>
+                                        <label>Dar mais peso para som forte em momento decisivo</label>
                                         <input type="number" name="context.scoreMade.clutchTagBonus" step="1">
                                     </div>
                                 </div>
@@ -207,7 +221,7 @@
                                 <div class="rule-group">
                                     <h4>CONTEXTO / ERROS</h4>
                                     <div class="rule-field">
-                                        <label>Bônus Tag Fun</label>
+                                        <label>Favorecer som descontraído quando a jogada termina em erro</label>
                                         <input type="number" name="context.shotMissed.funTagBonus" step="1">
                                     </div>
                                 </div>
@@ -215,15 +229,15 @@
                                 <div class="rule-group">
                                     <h4>CONTEXTO / FIM DE TEMPO</h4>
                                     <div class="rule-field">
-                                        <label>Bônus Oficial (Period)</label>
+                                        <label>Preferir som oficial no fim do período</label>
                                         <input type="number" name="context.periodEnd.officialTagBonus" step="1">
                                     </div>
                                     <div class="rule-field">
-                                        <label>Bônus Oficial (Game)</label>
+                                        <label>Preferir som oficial no fim do jogo</label>
                                         <input type="number" name="context.gameEnd.officialTagBonus" step="1">
                                     </div>
                                     <div class="rule-field">
-                                        <label>Bônus Oficial (Timeout)</label>
+                                        <label>Preferir som oficial em pedido de tempo</label>
                                         <input type="number" name="context.timeout.officialTagBonus" step="1">
                                     </div>
                                 </div>
@@ -231,47 +245,49 @@
                                 <div class="rule-group">
                                     <h4>CONTEXTO / FALTAS</h4>
                                     <div class="rule-field">
-                                        <label>Penalidade Falta Comum</label>
+                                        <label>Reduzir chance de tocar som em falta comum</label>
                                         <input type="number" name="context.foulPersonal.regularFoulPenalty" step="1">
                                     </div>
                                     <div class="rule-field">
-                                        <label>Bônus Exclusão Oficial</label>
+                                        <label>Preferir som oficial em falta que tira o jogador do jogo</label>
                                         <input type="number" name="context.foulPersonal.exclusionOfficialBonus" step="1">
                                     </div>
                                 </div>
 
                                 <div class="rule-group">
-                                    <h4>RECÊNCIA (COOLDOWN)</h4>
+                                    <h4>EVITAR REPETIÇÃO</h4>
+                                    <p class="section-desc" style="margin-bottom: 0.8rem;">Controle o quanto o sistema evita tocar o mesmo áudio muitas vezes.</p>
                                     <div class="rule-field">
-                                        <label>Bônus Sem Repetição</label>
+                                        <label>Dar preferência para áudio que não foi repetido</label>
                                         <input type="number" name="recency.noRepeatBonus" step="1">
                                     </div>
                                     <div class="rule-field">
-                                        <label>Penalidade Repetição</label>
+                                        <label>Diminuir a chance de repetir o mesmo áudio</label>
                                         <input type="number" name="recency.repeatPenaltyPerOccurrence" step="1">
                                     </div>
                                     <div class="rule-field">
-                                        <label>Janela de Recência</label>
+                                        <label>Quantas jogadas recentes o sistema deve observar</label>
                                         <input type="number" name="recency.recentWindow" step="1">
                                     </div>
                                 </div>
 
                                 <div class="rule-group">
-                                    <h4>INTENSIDADE</h4>
+                                    <h4>FORÇA DA REAÇÃO SONORA</h4>
+                                    <p class="section-desc" style="margin-bottom: 0.8rem;">Defina quando o sistema deve preferir sons mais fortes ou equilibrados.</p>
                                     <div class="rule-field">
-                                        <label>Bônus Alta Int. (Fim)</label>
+                                        <label>Preferir som forte no fim do período</label>
                                         <input type="number" name="intensity.highIntensityPeriodEndBonus" step="1">
                                     </div>
                                     <div class="rule-field">
-                                        <label>Penalidade Baixa Int. (Fim)</label>
+                                        <label>Evitar som fraco no fim do período</label>
                                         <input type="number" name="intensity.lowIntensityPeriodEndPenalty" step="1">
                                     </div>
                                     <div class="rule-field">
-                                        <label>Bônus Alta Int. (Clutch)</label>
+                                        <label>Preferir som forte em momento decisivo</label>
                                         <input type="number" name="intensity.highIntensityClutchBonus" step="1">
                                     </div>
                                     <div class="rule-field">
-                                        <label>Bônus Int. Média (Default)</label>
+                                        <label>Preferir som equilibrado nas situações normais</label>
                                         <input type="number" name="intensity.mediumIntensityDefaultBonus" step="1">
                                     </div>
                                 </div>
@@ -279,15 +295,16 @@
                         </div>
                         
                         <div class="panel-footer">
-                            <button class="btn btn-primary full-width" id="save-rules-btn">SALVAR REGRAS</button>
+                            <button class="btn btn-primary full-width" id="save-rules-btn">SALVAR CRITÉRIOS</button>
                         </div>
                     </div>
 
                     <!-- Bloco B: Simulador -->
                     <div class="scoring-panel simulator-panel">
                         <div class="panel-header">
-                            <h3><span class="panel-icon">🧪</span> SIMULADOR DE CONTEXTO</h3>
+                            <h3><span class="panel-icon">🧪</span> SIMULAR UMA SITUAÇÃO DO JOGO</h3>
                         </div>
+                        <p class="section-desc" style="padding: 0 1.2rem; margin-top: 0.5rem;">Monte um cenário e veja qual áudio o sistema escolheria.</p>
                         
                         <div class="simulator-content">
                             <form id="simulation-form">
@@ -295,11 +312,12 @@
                                     <label>EVENTO</label>
                                     <select name="eventType" id="sim-event-type" class="sim-select">
                                         <option value="score.made">Cesta (+1, +2, +3)</option>
-                                        <option value="shot.missed">Erro de Arremesso</option>
-                                        <option value="timeout">Pedido de Tempo</option>
-                                        <option value="period.end">Fim de Período</option>
-                                        <option value="game.end">Fim de Jogo</option>
-                                        <option value="foul.personal">Falta Pessoal</option>
+                                        <option value="shot.missed">Erro de arremesso</option>
+                                        <option value="timeout">Pedido de tempo</option>
+                                        <option value="period.end">Fim de período</option>
+                                        <option value="game.end">Fim de jogo</option>
+                                        <option value="foul.personal">Falta</option>
+                                        <option value="sub">Substituição</option>
                                     </select>
                                 </div>
 
@@ -330,13 +348,13 @@
                                             <input type="number" name="scoreDiff" value="0">
                                         </div>
                                     </div>
-                                    <div class="sim-field">
-                                        <label><input type="checkbox" name="clutch" value="true"> Forçar Momento Clutch</label>
+                                    <div class="sim-checkbox-group">
+                                        <label><input type="checkbox" name="clutch" value="true"> Forçar Momento Decisivo</label>
                                     </div>
                                 </div>
                             </form>
 
-                            <button class="btn btn-warning btn-xl full-width" id="run-simulation-btn">EXECUTAR SIMULAÇÃO</button>
+                            <button class="btn btn-warning full-width" id="run-simulation-btn">EXECUTAR SIMULAÇÃO</button>
 
                             <div class="sim-divider"></div>
 
@@ -349,8 +367,9 @@
                     <!-- Bloco C: Ranking -->
                     <div class="scoring-panel ranking-panel">
                         <div class="panel-header">
-                            <h3><span class="panel-icon">📊</span> RANKING DE CANDIDATOS</h3>
+                            <h3><span class="panel-icon">📊</span> ORDEM DE PREFERÊNCIA DOS ÁUDIOS</h3>
                         </div>
+                        <p class="section-desc" style="padding: 0 1.2rem; margin-top: 0.5rem;">O sistema avalia os áudios possíveis e organiza do mais indicado ao menos indicado.</p>
                         
                         <div class="ranking-scroll-area">
                             <table class="ranking-table">
@@ -359,8 +378,8 @@
                                         <th>#</th>
                                         <th>ASSET</th>
                                         <th>TAGS</th>
-                                        <th>INT</th>
-                                        <th>SCORE</th>
+                                        <th>FORÇA</th>
+                                        <th>PONTUAÇÃO</th>
                                     </tr>
                                 </thead>
                                 <tbody id="ranking-body">
@@ -368,14 +387,14 @@
                                 </tbody>
                             </table>
                             <div id="ranking-empty" class="empty-state">
-                                Nenhuma simulação executada.
+                                Nenhuma escolha simulada ainda.
                             </div>
                         </div>
                     </div>
                 </main>
 
                 <div class="scoring-actions">
-                    <button class="btn btn-ghost" onclick="UIManager.switchScreen('match-screen')">FECHAR GESTÃO</button>
+                    <button class="btn btn-ghost" onclick="UIManager.switchScreen('match-screen')">FECHAR</button>
                 </div>
             </div>
         </section>
@@ -385,7 +404,7 @@
             <div class="setup-container">
                 <header class="setup-hero">
                     <div class="badge-fiba">FIBA APPROVED</div>
-                    <h1>RITIMO DE <span>JOGO</span></h1>
+                    <h1>RITMO DE <span>JOGO</span></h1>
                     <p>Sistema de Gestão de Partidas</p>
                 </header>
                 
@@ -397,8 +416,10 @@
                                 <label>COMPETIÇÃO</label>
                                 <input type="text" id="input-competition" placeholder="Ex: NBB 2024" value="NBB 2024">
                             </div>
-                            <button class="btn-start-hero" id="start-match-btn">INICIAR PARTIDA ➔</button>
-                            <button class="btn" id="clear-all-btn">LIMPAR TUDO</button>
+                            <div style="display: flex; gap: 10px;">
+                                <button id="mock-data-btn" class="btn btn-secondary">TIMES DE TESTE</button>
+                                <button class="btn-start-hero" id="start-match-btn">INICIAR PARTIDA ➔</button>
+                            </div>
                         </div>
                     </div>
 
@@ -408,15 +429,10 @@
                                 <input type="text" id="home-name" placeholder="TIME CASA" class="team-name-input" value="FLAMENGO">
                                 <div class="color-picker-area">
                                     <label>COR DO TIME</label>
-                                    <div class="color-picker-wrap">
-                                        <button class="color-preset active" style="background:#ff0000" title="Vermelho" onclick="UIManager.selectTeamColor('home', '#ff0000', this)"></button>
-                                        <button class="color-preset" style="background:#0000ff" title="Azul" onclick="UIManager.selectTeamColor('home', '#0000ff', this)"></button>
-                                        <button class="color-preset" style="background:#ffffff" title="Branco" onclick="UIManager.selectTeamColor('home', '#ffffff', this)"></button>
-                                        <button class="color-preset" style="background:#333333" title="Preto" onclick="UIManager.selectTeamColor('home', '#333333', this)"></button>
-                                        <div class="custom-color-container" title="Cor Personalizada">
-                                            <input type="color" id="home-color" value="#ff0000" class="custom-color-hidden" oninput="UIManager.selectTeamColor('home', this.value, this.nextElementSibling)">
-                                            <button class="color-preset custom-trigger"></button>
-                                        </div>
+                                    <div class="color-picker-simple" onclick="this.querySelector('input').click()">
+                                        <div class="color-preview-circle" id="home-color-preview" style="background: #ff0000"></div>
+                                        <span>Escolher Cor</span>
+                                        <input type="color" id="home-color" value="#ff0000" style="display:none" oninput="UIManager.updateColorPreview('home', this.value)">
                                     </div>
                                 </div>
                             </div>
@@ -435,15 +451,10 @@
                                 <input type="text" id="away-name" placeholder="TIME VISITANTE" class="team-name-input" value="FRANCA">
                                 <div class="color-picker-area">
                                     <label>COR DO TIME</label>
-                                    <div class="color-picker-wrap">
-                                        <button class="color-preset active" style="background:#ff6b00" title="Laranja" onclick="UIManager.selectTeamColor('away', '#ff6b00', this)"></button>
-                                        <button class="color-preset" style="background:#2196f3" title="Azul Claro" onclick="UIManager.selectTeamColor('away', '#2196f3', this)"></button>
-                                        <button class="color-preset" style="background:#9c27b0" title="Roxo" onclick="UIManager.selectTeamColor('away', '#9c27b0', this)"></button>
-                                        <button class="color-preset" style="background:#333333" title="Preto" onclick="UIManager.selectTeamColor('away', '#333333', this)"></button>
-                                        <div class="custom-color-container" title="Cor Personalizada">
-                                            <input type="color" id="away-color" value="#ff6b00" class="custom-color-hidden" oninput="UIManager.selectTeamColor('away', this.value, this.nextElementSibling)">
-                                            <button class="color-preset custom-trigger"></button>
-                                        </div>
+                                    <div class="color-picker-simple" onclick="this.querySelector('input').click()">
+                                        <div class="color-preview-circle" id="away-color-preview" style="background: #2196f3"></div>
+                                        <span>Escolher Cor</span>
+                                        <input type="color" id="away-color" value="#2196f3" style="display:none" oninput="UIManager.updateColorPreview('away', this.value)">
                                     </div>
                                 </div>
                             </div>
@@ -474,7 +485,7 @@
                         <div class="score" id="home-score" style="color: var(--home-color)">0</div>
                         
                         <div class="team-status-bar">
-                            <div class="bonus-indicator" id="home-bonus">BONUS</div>
+                            <div class="bonus-indicator" id="home-bonus">BONUS FALTAS</div>
                             <div class="timeout-dots" id="home-timeouts">
                                 <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
                             </div>
@@ -502,7 +513,7 @@
                             <div id="shot-clock" class="shot-clock">24</div>
                             
                             <div class="time-controls">
-                                <button class="btn btn-primary btn-xl pulse-attention" id="toggle-clock-btn">START</button>
+                                <button class="btn btn-primary btn-xl" id="toggle-clock-btn">START</button>
                                 <div style="display: flex; gap: 10px; width: 100%;">
                                     <button class="btn btn-secondary btn-lg" id="reset-24-btn">🔄 POSSE (24s)</button>
                                     <button class="btn btn-secondary btn-lg" id="reset-14-btn">14s</button>
@@ -514,7 +525,6 @@
                                     <button class="btn btn-nba" id="nba-btn" title="NBA">🏀</button>
                                     <button class="btn btn-torcida" id="torcida-btn" title="Torcida">🙌</button>
                                     <button class="btn btn-musica" id="musica-btn" title="Musicas">🎵</button>
-                                    <button class="btn btn-skip" id="skip-audio-btn" title="Pular Áudio">⏭️</button>
                                 </div>
                             </div>
                         </div>
@@ -526,7 +536,10 @@
                             </div>
 
                             <div class="sound-queue-panel">
-                                <h3>🔊 FILA DE ÁUDIO</h3>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                    <h3>🔊 FILA DE ÁUDIO</h3>
+                                    <button class="btn btn-skip btn-xs" id="skip-audio-btn">⏭️ SKIP</button>
+                                </div>
                                 <div id="audio-queue" class="queue-list"></div>
                             </div>
                         </div>
@@ -545,7 +558,7 @@
                             <div class="timeout-dots" id="away-timeouts">
                                 <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
                             </div>
-                            <div class="bonus-indicator" id="away-bonus">BONUS</div>
+                            <div class="bonus-indicator" id="away-bonus">BONUS FALTAS</div>
                         </div>
                         <div class="team-fouls">FALTAS: <span id="fouls-away">0</span></div>
                         <div class="active-players" id="away-active-players"></div>
@@ -576,7 +589,7 @@
             <div class="report-container glass-card">
                 <div class="report-header">
                     <h1>SÚMULA DA PARTIDA</h1>
-                    <p>RITIMO DE JOGO - Coyotes Arena</p>
+                    <p>RITMO DE JOGO - Coyotes Arena</p>
                 </div>
                 <div id="report-content"></div>
                 <div class="report-footer">
@@ -614,7 +627,7 @@
                 </div>
                 <p>O placar, faltas e cronômetro serão zerados, mas os <strong>jogadores e times serão mantidos</strong>.</p>
                 <div class="modal-actions">
-                    <button class="btn btn-secondary" onclick="document.getElementById('restart-modal').classList.remove('active')">CANCELAR</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('restart-modal').classList.remove('active')">FECHAR</button>
                     <button class="btn btn-danger" id="confirm-restart-btn">SIM, REINICIAR</button>
                 </div>
             </div>
@@ -629,7 +642,7 @@
                 </div>
                 <p>Esta ação irá <strong>apagar permanentemente</strong> todos os times e jogadores cadastrados. O sistema voltará ao estado inicial.</p>
                 <div class="modal-actions">
-                    <button class="btn btn-secondary" onclick="document.getElementById('clear-all-modal').classList.remove('active')">CANCELAR</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('clear-all-modal').classList.remove('active')">FECHAR</button>
                     <button class="btn btn-danger" id="confirm-clear-all-btn">SIM, APAGAR TUDO</button>
                 </div>
             </div>
@@ -644,8 +657,8 @@
                 </div>
                 <p>Detectamos uma partida em andamento. Como deseja prosseguir?</p>
                 <div class="modal-actions vertical-actions">
-                    <button class="btn btn-primary btn-xl pulse-attention" id="confirm-continue-btn">CONTINUAR PARTIDA</button>
-                    <button class="btn btn-secondary" id="recovery-restart-btn">REINICIAR DO ZERO</button>
+                    <button class="btn btn-primary btn-xl pulse-attention" id="confirm-continue-btn">CONTINUAR</button>
+                    <button class="btn btn-secondary" id="recovery-restart-btn">REINICIAR TUDO</button>
                 </div>
             </div>
         </div>

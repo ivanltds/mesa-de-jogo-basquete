@@ -5,7 +5,7 @@ test.describe('FIBA Scoreboard - Inteligência Sonora (Audio Policy)', () => {
   test.beforeEach(async ({ page }) => {
     // Limpa estado anterior
     await page.addInitScript(() => {
-      window.localStorage.removeItem('ritmo_de_jogo_state');
+      window.localStorage.removeItem('ritmo_de_jogo_state'); window.localStorage.setItem('ritmo_de_jogo_test_mode', 'true');
     });
     
     await page.goto('/mesa-de-jogo/');
@@ -17,7 +17,8 @@ test.describe('FIBA Scoreboard - Inteligência Sonora (Audio Policy)', () => {
 
   test('deve configurar uma reação customizada para cesta e disparar corretamente', async ({ page }) => {
     // 1. Abre Gestão de Áudio
-    await page.click('#audio-policy-btn');
+    await page.click('.settings-toggle');
+    await page.click('button:has-text("INTELIGÊNCIA DE ÁUDIO")');
     await expect(page.locator('#audio-policy-screen')).toBeVisible();
 
     // 2. Muda reação de 1 ponto para 'ERROU'
@@ -30,10 +31,10 @@ test.describe('FIBA Scoreboard - Inteligência Sonora (Audio Policy)', () => {
     await page.click('#save-policy-btn');
     
     // Verifica toast de confirmação
-    await expect(page.locator('.toast:has-text("Políticas de áudio salvas")')).toBeVisible();
+    await expect(page.locator('.toast:has-text("Ajustes salvos com sucesso")')).toBeVisible();
 
     // 5. Volta para o jogo
-    await page.click('button:has-text("CANCELAR")');
+    await page.click('button:has-text("FECHAR")', { force: true });
     await expect(page.locator('#match-screen')).toBeVisible();
 
     await page.evaluate(() => {
@@ -57,7 +58,7 @@ test.describe('FIBA Scoreboard - Inteligência Sonora (Audio Policy)', () => {
     expect(history).toContainEqual({ cat: 'errou', prio: 5 });
 
     // 9. Comete uma falta
-    await playerA1.locator('button:has-text("FOUL")').click();
+    await playerA1.locator('button:has-text("FALTA")').click();
 
     // 10. Verifica se o áudio 'CESTA' foi disparado (conforme configurado no passo 3)
     const historyFinal = await page.evaluate(() => window.audioHistory);
@@ -65,13 +66,14 @@ test.describe('FIBA Scoreboard - Inteligência Sonora (Audio Policy)', () => {
   });
 
   test('deve desativar áudio automático quando configurado', async ({ page }) => {
-    await page.click('#audio-policy-btn');
+    await page.click('.settings-toggle');
+    await page.click('button:has-text("INTELIGÊNCIA DE ÁUDIO")');
     
     // Desativa o switch de Assistente Automático
     await page.click('#toggle-auto-audio');
     
     await page.click('#save-policy-btn');
-    await page.click('button:has-text("CANCELAR")');
+    await page.click('button:has-text("FECHAR")', { force: true });
 
     await page.evaluate(() => {
         window.audioHistory = [];

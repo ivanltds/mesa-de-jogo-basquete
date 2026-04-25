@@ -4,6 +4,7 @@ import { INITIAL_AUDIO_PROFILES } from './audio-profiles.js';
 import { AudioPlaybackQueue as SoundManager } from './audio-playback-queue.js';
 import { AudioDecisionEngine } from './audio-decision-engine.js';
 import { AUDIO_CATALOG } from './audio-catalog.js';
+import { AudioHistory } from './audio-history.js';
 import { EVENT_TYPES } from '../core/event-types.js';
 
 function getProfile(screenId) {
@@ -103,6 +104,7 @@ export function triggerAudio(eventName, payload = {}, options = {}) {
 
       if (chosenAsset) {
         SoundManager.addToQueue(category, chosenAsset.file, 5, chosenAsset.id);
+        AudioHistory.add(chosenAsset.id, eventType);
         return category;
       }
     }

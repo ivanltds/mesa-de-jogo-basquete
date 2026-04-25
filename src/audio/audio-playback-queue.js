@@ -81,8 +81,17 @@ export const AudioPlaybackQueue = {
 
         this.currentAudio.onended = next;
 
+        const updateProgress = () => {
+            if (!this.currentAudio || !this.isPlaying || !this.currentItem) return;
+            const progress = (this.currentAudio.currentTime / this.currentAudio.duration) * 100;
+            const bar = document.getElementById('playback-bar-main');
+            if (bar) bar.style.width = `${progress}%`;
+            if (this.isPlaying) requestAnimationFrame(updateProgress);
+        };
+
         try {
             await this.currentAudio.play();
+            requestAnimationFrame(updateProgress);
         } catch (e) {
             console.warn("Falha ao tocar áudio, pulando...", e);
             next();

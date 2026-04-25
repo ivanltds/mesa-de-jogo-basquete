@@ -19,6 +19,7 @@ import {
     openSubModal, selectSubPlayer, togglePossession, 
     nextPeriod, saveState, loadState 
 } from '../src/app/bootstrap.js';
+import * as Dispatcher from '../src/core/event-dispatcher.js';
 
 describe('FIBA Digital Scoreboard - Suíte Completa de Estabilização', () => {
     
@@ -250,6 +251,52 @@ describe('FIBA Digital Scoreboard - Suíte Completa de Estabilização', () => {
             window.nextPeriod();
             
             expect(spy).toHaveBeenCalledWith('home');
+        });
+    });
+    describe('Fase 10: Novas Regras FIBA 2024 (Game Flow)', () => {
+        it('10.1 deve pausar relógio, resetar 24s e mudar posse ao fazer cesta', () => {
+            window.gameState.isActive = true;
+            window.gameState.possession = 'home';
+            
+            window.addPoints('home', '10', 2);
+            
+            expect(window.gameState.isActive).toBe(false); // Pausado
+            expect(window.gameState.shotClock).toBe(24000); // Reseta 24s
+            expect(window.gameState.possession).toBe('away'); // Mudou posse
+        });
+
+        it('10.2 deve startar o relógio ao resetar 24s manualmente', () => {
+            window.gameState.isActive = false;
+            ClockEngine.resetShotClock(24000, true);
+            expect(window.gameState.isActive).toBe(true);
+        });
+
+        it('10.3 deve startar o relógio ao resetar 14s (Rebote OF) manualmente', () => {
+            window.gameState.isActive = false;
+            ClockEngine.resetShotClock(14000, true);
+            expect(window.gameState.isActive).toBe(true);
+        });
+
+        it('10.4 não deve disparar áudio de posse ao fazer cesta (reset silencioso)', () => {
+            const spy = vi.spyOn(Dispatcher, 'dispatchGameEvent');
+            
+            window.addPoints('home', '10', 2);
+            
+            const calls = spy.mock.calls.map(c => c[0]);
+            expect(calls).toContain(EVENT_TYPES.SCORE_MADE);
+            expect(calls).not.toContain('posse_24');
+            
+            spy.mockRestore();
+        });
+
+        it('10.5 deve disparar áudio de posse ao resetar 24s manualmente', () => {
+            const spy = vi.spyOn(Dispatcher, 'dispatchGameEvent');
+            
+            ClockEngine.resetShotClock(24000, false, false);
+            
+            expect(spy).toHaveBeenCalledWith('posse_24', expect.anything());
+            
+            spy.mockRestore();
         });
     });
 });

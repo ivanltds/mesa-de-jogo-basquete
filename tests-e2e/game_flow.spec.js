@@ -4,10 +4,8 @@ test.describe('FIBA Scoreboard - Fluxo de Tempo e Períodos', () => {
   
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
-      window.localStorage.removeItem('ritmo_de_jogo_state');
+      window.localStorage.removeItem('ritmo_de_jogo_state'); window.localStorage.setItem('ritmo_de_jogo_test_mode', 'true');
     });
-    await page.goto('/mesa-de-jogo/');
-    // Desativa animações para estabilidade nos testes
     await page.addStyleTag({ content: `
       *, *::before, *::after {
         animation-duration: 0s !important;
@@ -16,17 +14,19 @@ test.describe('FIBA Scoreboard - Fluxo de Tempo e Períodos', () => {
         scroll-behavior: auto !important;
       }
     `});
-    await page.locator('#mock-data-btn').click();
-    await page.locator('#start-match-btn').click();
+    await page.goto('/mesa-de-jogo/');
+    await page.click('#mock-data-btn');
+    await page.click('#start-match-btn');
+    await expect(page.locator('#match-screen')).toHaveClass(/active/);
   });
 
   test('deve bloquear substituição com cronômetro rodando e permitir com ele parado', async ({ page }) => {
     // 1. Liga o cronômetro
-    await page.locator('#toggle-clock-btn').click();
+    await page.locator('#toggle-clock-btn').click({ force: true });
     await expect(page.locator('#toggle-clock-btn')).toHaveText('PAUSE');
 
     // 2. Tenta abrir SUB
-    const firstSubBtn = page.locator('.team-panel.home').getByRole('button', { name: 'SUB' }).first();
+    const firstSubBtn = page.locator('.team-panel.home button:has-text("SUB")').first();
     await firstSubBtn.click();
 
     // Valida que o modal NÃO está ativo e apareceu toast de erro
@@ -34,7 +34,7 @@ test.describe('FIBA Scoreboard - Fluxo de Tempo e Períodos', () => {
     await expect(page.locator('.toast.error')).toContainText('bola morta');
 
     // 3. Para o cronômetro
-    await page.locator('#toggle-clock-btn').click();
+    await page.locator('#toggle-clock-btn').click({ force: true });
     await expect(page.locator('#toggle-clock-btn')).toHaveText('START');
 
     // 4. Abre SUB novamente
@@ -46,18 +46,24 @@ test.describe('FIBA Scoreboard - Fluxo de Tempo e Períodos', () => {
     const shotClock = page.locator('#shot-clock');
     
     // Reset 14s
+    // Reset 14s (Rebote OF)
     await page.locator('#reset-14-btn').click();
     await expect(shotClock).toHaveText('14');
+    await expect(page.locator('#toggle-clock-btn')).toHaveText('PAUSE'); // Deve startar automático
+
+    // Para relógio para testar próximo reset
+    await page.locator('#toggle-clock-btn').click({ force: true });
 
     // Reset 24s
     await page.locator('#reset-24-btn').click();
     await expect(shotClock).toHaveText('24');
+    await expect(page.locator('#toggle-clock-btn')).toHaveText('PAUSE'); // Deve startar automático
   });
 
   test('deve avançar o período, resetar relógios e faltas coletivas', async ({ page }) => {
     // 1. Adiciona faltas coletivas (Time Casa)
     const homePlayerCard = page.locator('#home-active-players .player-match-card').first();
-    const foulBtn = homePlayerCard.getByRole('button', { name: 'FOUL' });
+    const foulBtn = homePlayerCard.getByRole('button', { name: 'FALTA' });
     await foulBtn.click();
     await foulBtn.click();
     
@@ -65,7 +71,8 @@ test.describe('FIBA Scoreboard - Fluxo de Tempo e Períodos', () => {
 
     // 2. FFW para os últimos 10s e deixa zerar
     await page.locator('#fast-forward-btn').click();
-    await page.locator('#toggle-clock-btn').click(); // Inicia o relógio
+    await page.waitForTimeout(500); // Aguarda o decremento ser processado
+    await page.locator('#toggle-clock-btn').click({ force: true }); // Inicia o relógio
     
     // Aguarda o relógio zerar (leva aprox 10 segundos no Fast Forward)
     await expect(page.locator('#game-clock')).toHaveText('0:00', { timeout: 12000 });

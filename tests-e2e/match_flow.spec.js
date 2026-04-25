@@ -4,9 +4,8 @@ test.describe('FIBA Scoreboard - Fluxo de Partida e Setup', () => {
   
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
-      window.localStorage.removeItem('ritmo_de_jogo_state');
+      window.localStorage.removeItem('ritmo_de_jogo_state'); window.localStorage.setItem('ritmo_de_jogo_test_mode', 'true');
     });
-    await page.goto('/mesa-de-jogo/');
     await page.addStyleTag({ content: `
       *, *::before, *::after {
         animation-duration: 0s !important;
@@ -15,19 +14,26 @@ test.describe('FIBA Scoreboard - Fluxo de Partida e Setup', () => {
         scroll-behavior: auto !important;
       }
     `});
+    await page.goto('/mesa-de-jogo/');
   });
 
   test('deve configurar uma partida completa e iniciar com sucesso', async ({ page }) => {
     // 1. Usa o botão de Mock Data para agilizar o setup de 12 jogadores
-    const mockBtn = page.locator('#mock-data-btn');
-    await mockBtn.click();
+    await page.click('#mock-data-btn');
     
     // Valida se os nomes foram preenchidos
     await expect(page.locator('#home-name')).toHaveValue('FLAMENGO');
     await expect(page.locator('#away-name')).toHaveValue('FRANCA');
 
     // 2. Altera a cor de um time para validar persistência visual
-    await page.locator('#home-color').fill('#000000'); // Preto para o Flamengo
+    await page.evaluate(() => {
+        const input = document.getElementById('home-color');
+        if (input) {
+            input.value = '#000000';
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    });
     
     // 3. Inicia a partida
     const startBtn = page.locator('#start-match-btn');

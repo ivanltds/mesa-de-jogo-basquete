@@ -4,7 +4,7 @@ test.describe('FIBA Scoreboard - Smoke Tests', () => {
   
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
-      window.localStorage.removeItem('ritmo_de_jogo_state');
+      window.localStorage.removeItem('ritmo_de_jogo_state'); window.localStorage.setItem('ritmo_de_jogo_test_mode', 'true');
     });
     // Desativa animações para estabilidade nos testes
     await page.addStyleTag({ content: `
@@ -37,7 +37,7 @@ test.describe('FIBA Scoreboard - Smoke Tests', () => {
     
     // Verifica o título do Placar
     const title = page.locator('.setup-hero h1');
-    await expect(title).toContainText('RITIMO DE JOGO');
+    await expect(title).toContainText('RITMO DE JOGO');
     
     // Verifica se o botão de iniciar partida existe
     const startBtn = page.locator('#start-match-btn');
@@ -50,6 +50,6 @@ test.describe('FIBA Scoreboard - Smoke Tests', () => {
     // Verifica se está na tela de soundboard
     await expect(page.locator('#soundboard-screen')).toHaveClass(/active/);
     const djTitle = page.locator('.dj-logo');
-    await expect(djTitle).toContainText('RITIMO DE JOGO');
+    await expect(djTitle).toContainText('RITMO DE JOGO');
   });
 });

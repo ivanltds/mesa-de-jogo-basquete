@@ -61,9 +61,12 @@ export const ClockEngine = {
     toggle() {
         gameState.isActive ? ClockEngine.stop() : ClockEngine.start();
     },
-    resetShotClock(time = 24000) {
+    resetShotClock(time = 24000, startClock = false, silent = false) {
         gameState.shotClock = time;
+        if (startClock) this.start();
         window.UIManager.updateClocks();
+        
+        if (silent) return;
         
         // Dispara evento para áudio
         const eventType = time === 24000 ? 'posse_24' : 'posse_14';

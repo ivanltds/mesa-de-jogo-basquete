@@ -44,6 +44,7 @@ export const selectSubPlayer = (type, num) => {
         GameEngine.logEvent(`SUB: #${pIn.number} entra, #${pOut.number} sai`, 'sub', subState.teamKey, null, 0, pIn.number, pOut.number);
         document.getElementById('sub-modal').classList.remove('active');
         UIManager.updateScoreboard();
+        window.saveState();
     } else UIManager.renderSubLists(subState);
 };
 window.selectSubPlayer = selectSubPlayer;
@@ -54,7 +55,14 @@ export const addPoints = (team, num, pts) => {
         p.points += pts;
         gameState.teams[team].score += pts;
         GameEngine.logEvent(`${pts} pts para #${num}`, 'points', team, num, pts);
+        
+        // FIBA RULE: Após cesta, pausa relógio, reseta 24s e inverte posse
+        ClockEngine.stop();
+        ClockEngine.resetShotClock(24000, false, true);
+        window.setPossession(team === 'home' ? 'away' : 'home');
+
         UIManager.updateScoreboard();
+        window.saveState();
     }
 };
 window.addPoints = addPoints;
@@ -70,6 +78,7 @@ export const addFoul = (team, num) => {
             window.notify(`JOGADOR #${num} EXCLUÍDO (5 FALTAS)!`, 'error');
         }
         UIManager.updateScoreboard();
+        window.saveState();
     }
 };
 window.addFoul = addFoul;
@@ -77,8 +86,13 @@ window.addFoul = addFoul;
 export const addTimeout = (team) => {
     if (gameState.teams[team].timeouts >= 5) return window.notify("Limite de tempos atingido!");
     gameState.teams[team].timeouts++;
-    GameEngine.logEvent(`TIMEOUT ${gameState.teams[team].name}`, 'timeout', team);
+    GameEngine.logEvent(`TEMPO: ${gameState.teams[team].name}`, 'timeout', team, null, 0, null, null, false);
+    
+    // Trigger official buzzer if configured for timeout
+    window.triggerAudio(EVENT_TYPES.TIMEOUT);
+    
     UIManager.updateScoreboard();
+    window.saveState();
 };
 window.addTimeout = addTimeout;
 
@@ -112,12 +126,14 @@ export const revertEvent = (id) => {
     e.reverted = isReverting;
     window.notify(isReverting ? 'Evento revertido!' : 'Evento restaurado!');
     UIManager.updateScoreboard();
+    window.saveState();
 };
 window.revertEvent = revertEvent;
 
 window.removePlayer = (team, i) => {
     gameState.teams[team].players.splice(i, 1);
     UIManager.renderPlayerList(team);
+    window.saveState();
 };
 
 export const notify = (msg, type = 'info') => {
@@ -187,6 +203,7 @@ export const nextPeriod = () => {
     
     GameEngine.logEvent(`Avançou para o ${gameState.period}`, 'info');
     UIManager.updateScoreboard();
+    window.saveState();
 };
 
 window.nextPeriod = nextPeriod;
@@ -194,8 +211,16 @@ window.nextPeriod = nextPeriod;
 export const togglePossession = () => {
     gameState.possession = gameState.possession === 'home' ? 'away' : 'home';
     UIManager.updateScoreboard();
+    window.saveState();
 };
 window.togglePossession = togglePossession;
+
+export const setPossession = (team) => {
+    gameState.possession = team;
+    UIManager.updateScoreboard();
+    window.saveState();
+};
+window.setPossession = setPossession;
 
 export const showReport = () => {
     const victoryModal = document.getElementById('victory-modal');
@@ -220,7 +245,15 @@ export const loadState = () => {
         if (saved) {
             const parsed = JSON.parse(saved);
             Object.assign(gameState, parsed);
+            
+            // Restore UI state
+            if (gameState.ui.activeScreenId) {
+                UIManager.switchScreen(gameState.ui.activeScreenId);
+            }
+            
             UIManager.updateScoreboard();
+            UIManager.renderPlayerList('home');
+            UIManager.renderPlayerList('away');
         }
     } catch (e) {
         console.error("Erro ao carregar estado:", e);
@@ -242,8 +275,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             gameState.teams.home.name = (hName ? hName.value : '') || 'CASA';
             gameState.teams.away.name = (aName ? aName.value : '') || 'VISITANTE';
-            gameState.teams.home.color = hColor ? hColor.value : '#ff0000';
-            gameState.teams.away.color = aColor ? aColor.value : '#0000ff';
+            gameState.teams.home.color = (hColor ? hColor.value : '') || '#ff0000';
+            gameState.teams.away.color = (aColor ? aColor.value : '') || '#2196f3';
             
             if (gameState.teams.home.players.length < 5 || gameState.teams.away.players.length < 5) return window.notify("Mínimo de 5 jogadores!");
             gameState.teams.home.players.slice(0, 5).forEach(p => p.inCourt = true);
@@ -331,8 +364,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (hName) hName.value = "FLAMENGO";
             if (aName) aName.value = "FRANCA";
-            if (hColor) hColor.value = "#ff0000";
-            if (aColor) aColor.value = "#2196f3";
+            if (hColor) {
+                hColor.value = "#ff0000";
+                UIManager.updateColorPreview('home', "#ff0000");
+            }
+            if (aColor) {
+                aColor.value = "#2196f3";
+                UIManager.updateColorPreview('away', "#2196f3");
+            }
             window.notify("Times de Elite carregados!");
         };
     }
@@ -400,10 +439,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(document.getElementById('toggle-clock-btn')) document.getElementById('toggle-clock-btn').onclick = ClockEngine.toggle;
     if (document.getElementById('reset-24-btn')) document.getElementById('reset-24-btn').onclick = () => {
-        ClockEngine.resetShotClock(24000);
-        window.togglePossession();
+        ClockEngine.resetShotClock(24000, true);
     };
-    if(document.getElementById('reset-14-btn')) document.getElementById('reset-14-btn').onclick = () => ClockEngine.resetShotClock(14000);
+    if(document.getElementById('reset-14-btn')) document.getElementById('reset-14-btn').onclick = () => ClockEngine.resetShotClock(14000, true);
     if(document.getElementById('next-period-btn')) document.getElementById('next-period-btn').onclick = () => window.nextPeriod();
     if(document.getElementById('fast-forward-btn')) document.getElementById('fast-forward-btn').onclick = () => ClockEngine.setTestTime();
     
@@ -452,12 +490,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isMainApp) {
         const hasActiveMatch = gameState.events.length > 0 || gameState.teams.home.score > 0 || gameState.teams.away.score > 0;
         
-        if (hasActiveMatch) {
+        const isTestMode = localStorage.getItem('ritmo_de_jogo_test_mode') === 'true';
+        if (hasActiveMatch && !isTestMode) {
             UIManager.switchScreen('match-screen');
             const recoveryModal = document.getElementById('recovery-modal');
             if (recoveryModal) recoveryModal.classList.add('active');
         } else {
-            UIManager.switchScreen('setup-screen');
+            // Respect saved screen if it's not setup/match (like audio-policy-screen)
+            const savedScreen = gameState.ui.activeScreenId;
+            if (savedScreen && savedScreen !== 'setup-screen' && savedScreen !== 'match-screen') {
+                UIManager.switchScreen(savedScreen);
+            } else {
+                UIManager.switchScreen('setup-screen');
+            }
         }
     }
 

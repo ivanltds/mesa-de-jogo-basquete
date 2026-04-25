@@ -9,18 +9,15 @@ import { EVENT_TYPES } from '../core/event-types.js';
 
 export const UIManager = {
     // ... (keep all existing methods)
-    selectTeamColor(teamKey, color, element) {
+    updateColorPreview(teamKey, color) {
+        const preview = document.getElementById(`${teamKey}-color-preview`);
+        if (preview) {
+            preview.style.background = color;
+        }
+        // Dispatch to ensure saveState picks it up if needed
         const input = document.getElementById(`${teamKey}-color`);
         if (input) {
             input.value = color;
-            input.dispatchEvent(new Event('input'));
-        }
-        
-        // Find the top-level wrap
-        const wrap = element.closest('.color-picker-wrap');
-        if (wrap) {
-            wrap.querySelectorAll('.color-preset, .custom-trigger').forEach(btn => btn.classList.remove('active'));
-            element.classList.add('active');
         }
     },
 
@@ -74,6 +71,7 @@ export const UIManager = {
         gameState.ui.activeScreenId = screenId;
 
         if (screenId === 'match-screen') this.initMatchUI();
+        if (window.saveState) window.saveState();
     },
 
     showVictoryModal(winnerKey) {
@@ -198,10 +196,17 @@ export const UIManager = {
         if (SoundManager.currentItem) {
             html += `
                 <div class="queue-item playing dj-queue-item">
-                    <span class="q-icon">🔊</span>
-                    <span class="q-cat">${SoundManager.currentItem.category.toUpperCase()}</span>
-                    <span class="q-file">${SoundManager.currentItem.file}</span>
-                    <span class="q-status">TOCANDO</span>
+                    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span class="q-icon">🔊</span>
+                            <span class="q-cat">${SoundManager.currentItem.category.toUpperCase()}</span>
+                            <span class="q-file">${SoundManager.currentItem.file}</span>
+                        </div>
+                        <span class="q-status">TOCANDO</span>
+                    </div>
+                    <div class="playback-container">
+                        <div class="playback-progress" id="playback-bar-main"></div>
+                    </div>
                 </div>
             `;
         }
@@ -216,8 +221,9 @@ export const UIManager = {
             </div>
         `).join('');
 
-        if (queueContainer) queueContainer.innerHTML = html || 'Fila vazia';
-        if (djQueueContainer) djQueueContainer.innerHTML = html || 'Fila vazia';
+        const emptyMsg = '<div class="empty-state">Fila vazia</div>';
+        if (queueContainer) queueContainer.innerHTML = html || emptyMsg;
+        if (djQueueContainer) djQueueContainer.innerHTML = html || emptyMsg;
     },
 
     renderSoundboard() {
@@ -253,7 +259,11 @@ export const UIManager = {
         sc.innerText = Math.ceil(gameState.shotClock / 1000);
         
         const toggleBtn = document.getElementById('toggle-clock-btn');
-        if (toggleBtn) toggleBtn.innerText = gameState.isActive ? "PAUSE" : "START";
+        if (toggleBtn) {
+            toggleBtn.innerText = gameState.isActive ? "PAUSE" : "START";
+            toggleBtn.classList.toggle('pulse-attention', !gameState.isActive);
+            toggleBtn.classList.toggle('btn-running', gameState.isActive);
+        }
     },
 
     renderActivePlayers(teamKey) {
@@ -264,18 +274,27 @@ export const UIManager = {
         
         container.innerHTML = active.map(p => {
             const isExcluded = p.fouls >= 5;
+            const isWarning = p.fouls === 4;
+            
             return `
-                <div class="player-match-card ${isExcluded ? 'excluded' : ''}" style="border-color: ${isExcluded ? '#ff0000' : 'var(--team-color)'}">
+                <div class="player-match-card ${isExcluded ? 'excluded' : ''}" style="border-left: 4px solid ${team.color}">
                     <div class="p-info">
-                        <span class="p-num" style="color: ${isExcluded ? '#ff0000' : 'var(--team-color)'}">#${p.number}</span>
-                        <span class="p-name">${p.name}</span>
-                        <span class="p-fouls" style="color: ${isExcluded ? '#ff0000' : 'inherit'}">${p.fouls}F ${isExcluded ? '🚫' : ''}</span>
+                        <div class="p-meta">
+                            <span class="p-num" style="color: ${team.color}">#${p.number}</span>
+                            <span class="p-name">${p.name}</span>
+                        </div>
+                        <div class="p-fouls-container" style="text-align: right;">
+                            <div style="font-size: 0.6rem; opacity: 0.6; font-weight: 800; margin-bottom: 2px;">FALTAS</div>
+                            <div class="p-fouls-badge ${isExcluded ? 'danger' : (isWarning ? 'warning' : '')}">
+                                ${p.fouls}${isExcluded ? ' 🚫' : ''}
+                            </div>
+                        </div>
                     </div>
                     <div class="player-actions">
-                        <button class="btn btn-xs btn-team" ${isExcluded ? 'disabled' : ''} onclick="window.addPoints('${teamKey}', '${p.number}', 1)">+1</button>
-                        <button class="btn btn-xs btn-team" ${isExcluded ? 'disabled' : ''} onclick="window.addPoints('${teamKey}', '${p.number}', 2)">+2</button>
-                        <button class="btn btn-xs btn-team" ${isExcluded ? 'disabled' : ''} onclick="window.addPoints('${teamKey}', '${p.number}', 3)">+3</button>
-                        <button class="btn btn-xs btn-team btn-warning" ${isExcluded ? 'disabled' : ''} onclick="window.addFoul('${teamKey}', '${p.number}')">FOUL</button>
+                        <button class="btn btn-xs btn-team" style="background: ${team.color}11; color: white; border: 1px solid ${team.color}44" ${isExcluded ? 'disabled' : ''} onclick="window.addPoints('${teamKey}', '${p.number}', 1)">+1</button>
+                        <button class="btn btn-xs btn-team" style="background: ${team.color}11; color: white; border: 1px solid ${team.color}44" ${isExcluded ? 'disabled' : ''} onclick="window.addPoints('${teamKey}', '${p.number}', 2)">+2</button>
+                        <button class="btn btn-xs btn-team" style="background: ${team.color}11; color: white; border: 1px solid ${team.color}44" ${isExcluded ? 'disabled' : ''} onclick="window.addPoints('${teamKey}', '${p.number}', 3)">+3</button>
+                        <button class="btn btn-xs btn-team btn-warning" ${isExcluded ? 'disabled' : ''} onclick="window.addFoul('${teamKey}', '${p.number}')">FALTA</button>
                         <button class="btn btn-xs btn-team btn-danger" onclick="window.openSubModal('${teamKey}', '${p.number}')">SUB</button>
                     </div>
                 </div>
@@ -508,7 +527,7 @@ export const UIManager = {
         });
 
         window.saveState();
-        window.notify("Políticas de áudio salvas!");
+        window.notify("Ajustes salvos com sucesso");
     },
 
     // --- GESTÃO DE SCORE ---
@@ -590,13 +609,13 @@ export const UIManager = {
 
         gameState.audio.scoringRules = rules;
         window.saveState();
-        window.notify("Regras de score salvas!");
+        window.notify("Critérios de escolha atualizados!");
     },
 
     resetScoringRules() {
         AudioScoringUtils.resetScoringRules(gameState);
         this.populateScoringRulesForm();
-        window.notify("Regras resetadas para o padrão.");
+        window.notify("Os ajustes voltaram para o padrão.");
     },
 
     runAudioScoringSimulation() {
@@ -642,14 +661,21 @@ export const UIManager = {
                 <tr class="ranking-row ${isWinner ? 'winner' : ''} ${!r.eligible ? 'ineligible' : ''}">
                     <td>${i + 1}</td>
                     <td>
-                        <div class="asset-id">${r.asset.id}</div>
-                        <div class="asset-file">${r.asset.file}</div>
+                        <div class="asset-row-header">
+                            <button class="play-preview-btn" onclick="UIManager.previewAudioAsset('${r.asset.id}', '${r.asset.file}', '${r.asset.eventTypes[0]}')">▶️</button>
+                            <div class="asset-info">
+                                <div class="asset-id">${r.asset.id}</div>
+                                <div class="asset-file">${r.asset.file}</div>
+                            </div>
+                        </div>
                     </td>
                     <td>${r.asset.tags.join(', ')}</td>
                     <td>${r.asset.intensity}</td>
                     <td>
-                        <div class="total-score">${r.breakdown.total}</div>
-                        <button class="breakdown-btn" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">🔍</button>
+                        <div class="score-cell">
+                            <div class="total-score">${r.breakdown.total}</div>
+                            <button class="breakdown-btn" title="Ver detalhes" onclick="this.parentElement.nextElementSibling.style.display = this.parentElement.nextElementSibling.style.display === 'none' ? 'block' : 'none'">🔍</button>
+                        </div>
                         <div class="reason-list" style="display: none;">
                             ${r.breakdown.reasons.map(reason => `
                                 <div class="reason-item">
@@ -663,6 +689,13 @@ export const UIManager = {
         }).join('');
     },
 
+    previewAudioAsset(id, file, category) {
+        if (window.AudioPlaybackQueue) {
+            window.AudioPlaybackQueue.addToQueue(category, file, 10, id); // High priority for preview
+            window.notify(`Preview: ${id}`);
+        }
+    },
+
     renderAudioScoringWinner(result) {
         const container = document.getElementById('sim-winner-container');
         if (!container) return;
@@ -674,15 +707,19 @@ export const UIManager = {
 
         container.innerHTML = `
             <div class="winner-card">
-                <h4>ASSET VENCEDOR</h4>
+                <h4>ÁUDIO ESCOLHIDO</h4>
                 <div class="winner-asset-name">${result.asset.id}</div>
                 <div class="winner-stats">
-                    <span>Score Total: <span class="winner-score-pill">${result.breakdown.total}</span></span>
-                    <span>Intensidade: ${result.asset.intensity}</span>
+                    <span>Pontuação Total: <span class="winner-score-pill">${result.breakdown.total}</span></span>
+                    <span>Força do Áudio: ${result.asset.intensity}</span>
                 </div>
-                <div class="winner-reasons" style="font-size: 0.75rem; margin-top: 1rem; color: #aaa;">
-                    ${result.breakdown.reasons.slice(0, 2).map(r => r.label).join(' • ')}...
+                <div class="winner-reasons" style="font-size: 0.75rem; margin-top: 1rem; color: #aaa; margin-bottom: 1rem;">
+                    ${result.breakdown.reasons.slice(0, 3).map(r => r.label).join(' • ')}${result.breakdown.reasons.length > 3 ? '...' : ''}
                 </div>
+                <button class="btn btn-primary btn-sm full-width" 
+                    onclick="UIManager.previewAudioAsset('${result.asset.id}', '${result.asset.file}', '${result.asset.eventTypes[0]}')">
+                    OUVIR AGORA ▶️
+                </button>
             </div>
         `;
     }

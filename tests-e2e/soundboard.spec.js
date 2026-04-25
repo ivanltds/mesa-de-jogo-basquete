@@ -5,7 +5,7 @@ test.describe('FIBA Scoreboard - Soundboard (Arena Mixer)', () => {
   test.beforeEach(async ({ page }) => {
     // Limpa estado anterior
     await page.addInitScript(() => {
-      window.localStorage.removeItem('ritmo_de_jogo_state');
+      window.localStorage.removeItem('ritmo_de_jogo_state'); window.localStorage.setItem('ritmo_de_jogo_test_mode', 'true');
     });
     
     // Desativa animações para estabilidade nos testes

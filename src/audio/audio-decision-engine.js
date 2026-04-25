@@ -92,33 +92,33 @@ export const AudioDecisionEngine = {
             if (state.derived.clutch) {
                 if (asset.tags.includes('clutch')) {
                     score += r.scoreMade.clutchTagBonus;
-                    reasons.push({ key: 'scoreMade.clutchTagBonus', value: r.scoreMade.clutchTagBonus, label: 'Tag clutch em momento clutch' });
+                    reasons.push({ key: 'scoreMade.clutchTagBonus', value: r.scoreMade.clutchTagBonus, label: 'Som forte em momento decisivo' });
                 }
             }
             if (state.derived.scoreDiff <= 6) {
                 score += r.scoreMade.closeGameBonus;
-                reasons.push({ key: 'scoreMade.closeGameBonus', value: r.scoreMade.closeGameBonus, label: 'Jogo equilibrado (diff <= 6)' });
+                reasons.push({ key: 'scoreMade.closeGameBonus', value: r.scoreMade.closeGameBonus, label: 'Bônus por jogo apertado' });
             }
         }
 
         if (event.type === EVENT_TYPES.SHOT_MISSED) {
             if (asset.tags.includes('fun')) {
                 score += r.shotMissed.funTagBonus;
-                reasons.push({ key: 'shotMissed.funTagBonus', value: r.shotMissed.funTagBonus, label: 'Tag divertida para erro' });
+                reasons.push({ key: 'shotMissed.funTagBonus', value: r.shotMissed.funTagBonus, label: 'Favorecer som descontraído quando a jogada termina em erro' });
             }
         }
 
         if (event.type === EVENT_TYPES.PERIOD_END) {
             if (asset.tags.includes('official')) {
                 score += r.periodEnd.officialTagBonus;
-                reasons.push({ key: 'periodEnd.officialTagBonus', value: r.periodEnd.officialTagBonus, label: 'Som oficial para fim de período' });
+                reasons.push({ key: 'periodEnd.officialTagBonus', value: r.periodEnd.officialTagBonus, label: 'Preferir som oficial no fim do período' });
             }
         }
 
         if (event.type === EVENT_TYPES.GAME_END) {
             if (asset.tags.includes('official')) {
                 score += r.gameEnd.officialTagBonus;
-                reasons.push({ key: 'gameEnd.officialTagBonus', value: r.gameEnd.officialTagBonus, label: 'Som oficial para fim de jogo' });
+                reasons.push({ key: 'gameEnd.officialTagBonus', value: r.gameEnd.officialTagBonus, label: 'Preferir som oficial no fim do jogo' });
             }
         }
 
@@ -126,18 +126,18 @@ export const AudioDecisionEngine = {
             if (event.payload?.isExclusion) {
                 if (asset.tags.includes('official')) {
                     score += r.foulPersonal.exclusionOfficialBonus;
-                    reasons.push({ key: 'foulPersonal.exclusionOfficialBonus', value: r.foulPersonal.exclusionOfficialBonus, label: 'Som oficial para exclusão' });
+                    reasons.push({ key: 'foulPersonal.exclusionOfficialBonus', value: r.foulPersonal.exclusionOfficialBonus, label: 'Preferir som oficial em falta que tira o jogador do jogo' });
                 }
             } else {
                 score += r.foulPersonal.regularFoulPenalty;
-                reasons.push({ key: 'foulPersonal.regularFoulPenalty', value: r.foulPersonal.regularFoulPenalty, label: 'Penalidade: Falta comum (silenciar)' });
+                reasons.push({ key: 'foulPersonal.regularFoulPenalty', value: r.foulPersonal.regularFoulPenalty, label: 'Reduzir chance de tocar som em falta comum' });
             }
         }
 
         if (event.type === EVENT_TYPES.TIMEOUT) {
             if (asset.tags.includes('official')) {
                 score += r.timeout.officialTagBonus;
-                reasons.push({ key: 'timeout.officialTagBonus', value: r.timeout.officialTagBonus, label: 'Som oficial para timeout' });
+                reasons.push({ key: 'timeout.officialTagBonus', value: r.timeout.officialTagBonus, label: 'Preferir som oficial em pedido de tempo' });
             }
         }
 
@@ -152,12 +152,12 @@ export const AudioDecisionEngine = {
             const penalty = repeated * r.repeatPenaltyPerOccurrence;
             return {
                 score: penalty,
-                reasons: [{ key: 'recency.repeatPenalty', value: penalty, label: `Penalidade por repetição (${repeated}x)` }]
+                reasons: [{ key: 'recency.repeatPenalty', value: penalty, label: `Diminuir a chance de repetir o mesmo áudio (${repeated}x)` }]
             };
         } else {
             return {
                 score: r.noRepeatBonus,
-                reasons: [{ key: 'recency.noRepeatBonus', value: r.noRepeatBonus, label: 'Bônus: Sem repetição recente' }]
+                reasons: [{ key: 'recency.noRepeatBonus', value: r.noRepeatBonus, label: 'Dar preferência para áudio que não foi repetido' }]
             };
         }
     },
@@ -170,10 +170,10 @@ export const AudioDecisionEngine = {
         if (event.type === EVENT_TYPES.PERIOD_END || event.type === EVENT_TYPES.GAME_END) {
             if (asset.intensity >= 4) {
                 score += r.highIntensityPeriodEndBonus;
-                reasons.push({ key: 'intensity.highIntensityPeriodEndBonus', value: r.highIntensityPeriodEndBonus, label: 'Alta intensidade no final' });
+                reasons.push({ key: 'intensity.highIntensityPeriodEndBonus', value: r.highIntensityPeriodEndBonus, label: 'Preferir som forte no fim do período' });
             } else {
                 score += r.lowIntensityPeriodEndPenalty;
-                reasons.push({ key: 'intensity.lowIntensityPeriodEndPenalty', value: r.lowIntensityPeriodEndPenalty, label: 'Penalidade: Baixa intensidade no final' });
+                reasons.push({ key: 'intensity.lowIntensityPeriodEndPenalty', value: r.lowIntensityPeriodEndPenalty, label: 'Evitar som fraco no fim do período' });
             }
             return { score, reasons };
         }
@@ -181,11 +181,11 @@ export const AudioDecisionEngine = {
         if (state.derived.clutch) {
             if (asset.intensity >= 4) {
                 score += r.highIntensityClutchBonus;
-                reasons.push({ key: 'intensity.highIntensityClutchBonus', value: r.highIntensityClutchBonus, label: 'Alta intensidade em momento decisivo' });
+                reasons.push({ key: 'intensity.highIntensityClutchBonus', value: r.highIntensityClutchBonus, label: 'Preferir som forte em momento decisivo' });
             }
         } else if (asset.intensity === 3) {
             score += r.mediumIntensityDefaultBonus;
-            reasons.push({ key: 'intensity.mediumIntensityDefaultBonus', value: r.mediumIntensityDefaultBonus, label: 'Preferência por intensidade média' });
+            reasons.push({ key: 'intensity.mediumIntensityDefaultBonus', value: r.mediumIntensityDefaultBonus, label: 'Preferir som equilibrado nas situações normais' });
         }
         
         return { score, reasons };
