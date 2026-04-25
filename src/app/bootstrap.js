@@ -3,6 +3,11 @@ import { gameState } from '../core/game-state.js';
 import { AudioPlaybackQueue as SoundManager } from '../audio/audio-playback-queue.js';
 import { GameEngine } from '../core/game-engine.js';
 import { ClockEngine } from '../core/clock-engine.js';
+import { triggerAudio, triggerManualAudio } from '../audio/audio-bridge.js';
+import { INITIAL_AUDIO_PROFILES } from '../audio/audio-profiles.js';
+
+window.triggerAudio = triggerAudio;
+window.triggerManualAudio = triggerManualAudio;
 import { UIManager } from '../ui/ui-manager.js';
 import { EVENT_TYPES } from '../core/event-types.js';
 import { dispatchGameEvent } from '../core/event-dispatcher.js';
@@ -134,7 +139,7 @@ export const openSoundboard = () => {
 window.openSoundboard = openSoundboard;
 
 export const nextPeriod = () => {
-    if (gameState.clock > 0) {
+    if (gameState.clock >= 1000) {
         window.notify("O relógio precisa estar em 00:00 para avançar de período!", "error");
         return;
     }
@@ -401,18 +406,36 @@ document.addEventListener('DOMContentLoaded', () => {
     if(document.getElementById('next-period-btn')) document.getElementById('next-period-btn').onclick = () => window.nextPeriod();
     if(document.getElementById('fast-forward-btn')) document.getElementById('fast-forward-btn').onclick = () => ClockEngine.setTestTime();
     
-    if (document.getElementById('mystery-btn')) document.getElementById('mystery-btn').onclick = () => SoundManager.play('esquisito');
-    if (document.getElementById('fun-btn')) document.getElementById('fun-btn').onclick = () => SoundManager.play('divertido');
+    if (document.getElementById('audio-policy-btn')) document.getElementById('audio-policy-btn').onclick = () => {
+        UIManager.switchScreen('audio-policy-screen');
+        UIManager.initAudioPolicyScreen();
+    };
+
+    if (document.getElementById('mystery-btn')) document.getElementById('mystery-btn').onclick = () => window.triggerManualAudio('esquisito');
+    if (document.getElementById('fun-btn')) document.getElementById('fun-btn').onclick = () => window.triggerManualAudio('divertido');
     
-    if (document.getElementById('nba-btn')) document.getElementById('nba-btn').onclick = () => SoundManager.play('nba');
-    if (document.getElementById('torcida-btn')) document.getElementById('torcida-btn').onclick = () => SoundManager.play('torcida');
-    if (document.getElementById('musica-btn')) document.getElementById('musica-btn').onclick = () => SoundManager.play('musica');
+    if (document.getElementById('nba-btn')) document.getElementById('nba-btn').onclick = () => window.triggerManualAudio('nba');
+    if (document.getElementById('torcida-btn')) document.getElementById('torcida-btn').onclick = () => window.triggerManualAudio('torcida');
+    if (document.getElementById('musica-btn')) document.getElementById('musica-btn').onclick = () => window.triggerManualAudio('musica');
     if (document.getElementById('skip-audio-btn')) document.getElementById('skip-audio-btn').onclick = () => SoundManager.skip();
     if (document.getElementById('close-sub-modal')) document.getElementById('close-sub-modal').onclick = () => document.getElementById('sub-modal').classList.remove('active');
 
     window.loadState();
+    
+    // Inicializa políticas de áudio se não existirem
+    if (!gameState.audio.policies) {
+        gameState.audio.policies = JSON.parse(JSON.stringify(INITIAL_AUDIO_PROFILES));
+    }
 
-    // Lógica de Recuperação de Sessão (Apenas se as telas de jogo existirem no DOM)
+    UIManager.updateScoreboard();
+
+    // Inicializa a Mesa de Som se estiver na tela correta
+    if (document.getElementById('soundboard-screen')) {
+        gameState.ui.activeScreenId = 'soundboard-screen';
+        UIManager.renderSoundboard();
+        UIManager.renderSoundQueue();
+    }
+
     const isMainApp = document.getElementById('setup-screen') && document.getElementById('match-screen');
     
     if (isMainApp) {

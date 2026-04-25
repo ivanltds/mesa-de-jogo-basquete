@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FIBA Digital Scoreboard</title>
+    <title>RITIMO DE JOGO</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="stylesheet" href="/style.css">
+    <script>document.title = 'RITIMO DE JOGO';</script>
 </head>
 <body class="dark-theme">
     <div id="app">
@@ -13,15 +15,164 @@
         <div id="dev-tools">
             <button id="mock-data-btn" class="btn btn-secondary btn-sm">TIMES DE TESTE</button>
             <button id="restart-match-btn" class="btn btn-danger btn-sm">REINICIAR PARTIDA</button>
+            <button id="audio-policy-btn" class="btn btn-primary btn-sm">GESTÃO DE ÁUDIO</button>
         </div>
+
+        <!-- Tela 4: Gestão de Áudio (Novo) -->
+        <!-- Tela 4: Inteligência Sonora (Redesenhada) -->
+        <section id="audio-policy-screen" class="screen">
+            <div class="policy-container glass-card">
+                <header class="policy-header">
+                    <div class="policy-badge">SMART SOUNDTRACK</div>
+                    <h1>INTELIGÊNCIA <span>SONORA</span></h1>
+                    <p>Configure como o assistente de áudio deve reagir a cada momento do jogo.</p>
+                </header>
+                
+                <main class="policy-layout">
+                    <div class="policy-nav">
+                        <label>AMBIENTE ATIVO</label>
+                        <div id="policy-screen-selector" class="screen-tiles">
+                            <!-- Preenchido via JS: Tiles das telas -->
+                        </div>
+                        <select id="policy-screen-select" style="display: none;"></select>
+                    </div>
+
+                    <div class="policy-main-grid">
+                        <!-- Card 1: Automação -->
+                        <div class="policy-card" id="card-behavior">
+                            <h3><span class="card-icon">🤖</span> COMPORTAMENTO</h3>
+                            <div class="policy-switches">
+                                <div class="switch-item" id="toggle-auto-audio">
+                                    <div class="switch-text">
+                                        <strong>Assistente Automático</strong>
+                                        <span>Dispara sons sozinho baseado nos eventos do jogo.</span>
+                                    </div>
+                                    <input type="checkbox" id="policy-allow-auto" hidden>
+                                    <div class="switch-ui"></div>
+                                </div>
+                                <div class="switch-item" id="toggle-manual-priority">
+                                    <div class="switch-text">
+                                        <strong>Prioridade Manual (DJ)</strong>
+                                        <span>Sons manuais cortam o som automático imediatamente.</span>
+                                    </div>
+                                    <input type="checkbox" id="policy-manual-priority" hidden>
+                                    <div class="switch-ui"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card: Inteligência de Eventos Unified -->
+                        <div class="policy-card full-width" id="card-events-unified">
+                            <h3><span class="card-icon">📢</span> REAÇÃO A EVENTOS</h3>
+                            
+                            <div class="events-group-grid">
+                                <!-- Grupo 1: Cestas -->
+                                <div class="events-subgroup">
+                                    <h4>🎯 EVENTOS DE CESTA</h4>
+                                    <div class="score-tiles">
+                                        <div class="score-tile">
+                                            <div class="tile-label">LANCE LIVRE (+1)</div>
+                                            <select id="score-map-1" class="tile-select"></select>
+                                        </div>
+                                        <div class="score-tile">
+                                            <div class="tile-label">CESTA CAMPO (+2)</div>
+                                            <select id="score-map-2" class="tile-select"></select>
+                                        </div>
+                                        <div class="score-tile premium">
+                                            <div class="tile-label">BOLA DE TRÊS (+3)</div>
+                                            <select id="score-map-3" class="tile-select"></select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Grupo 2: Posse -->
+                                <div class="events-subgroup">
+                                    <h4>⏱️ EVENTOS DE POSSE</h4>
+                                    <div class="score-tiles">
+                                        <div class="score-tile">
+                                            <div class="tile-label">REINÍCIO 24s</div>
+                                            <select id="event-map-posse_24" class="tile-select"></select>
+                                        </div>
+                                        <div class="score-tile">
+                                            <div class="tile-label">REINÍCIO 14s</div>
+                                            <select id="event-map-posse_14" class="tile-select"></select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Grupo 3: Tempo -->
+                                <div class="events-subgroup">
+                                    <h4>⏳ EVENTOS DE TEMPO</h4>
+                                    <div class="score-tiles">
+                                        <div class="score-tile">
+                                            <div class="tile-label">FIM DE PERÍODO</div>
+                                            <select id="event-map-period_end" class="tile-select"></select>
+                                        </div>
+                                        <div class="score-tile">
+                                            <div class="tile-label">1 MIN RESTANTE</div>
+                                            <select id="event-map-countdown_1m" class="tile-select"></select>
+                                        </div>
+                                        <div class="score-tile">
+                                            <div class="tile-label">24s RESTANTES</div>
+                                            <select id="event-map-countdown_24s" class="tile-select"></select>
+                                        </div>
+                                        <div class="score-tile">
+                                            <div class="tile-label">10s RESTANTES</div>
+                                            <select id="event-map-countdown_10s" class="tile-select"></select>
+                                        </div>
+                                        <div class="score-tile">
+                                            <div class="tile-label">FIM DE JOGO</div>
+                                            <select id="event-map-game_end" class="tile-select"></select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Grupo 4: Administrativo -->
+                                <div class="events-subgroup">
+                                    <h4>📋 ADMINISTRATIVOS</h4>
+                                    <div class="score-tiles">
+                                        <div class="score-tile">
+                                            <div class="tile-label">FALTA</div>
+                                            <select id="event-map-foul" class="tile-select"></select>
+                                        </div>
+                                        <div class="score-tile">
+                                            <div class="tile-label">SUBSTITUIÇÃO</div>
+                                            <select id="event-map-sub" class="tile-select"></select>
+                                        </div>
+                                        <div class="score-tile">
+                                            <div class="tile-label">PEDIDO DE TEMPO</div>
+                                            <select id="event-map-timeout" class="tile-select"></select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: Filtro de Humor -->
+                        <div class="policy-card full-width">
+                            <h3><span class="card-icon">📻</span> CATÁLOGO DE SONS DISPONÍVEIS</h3>
+                            <p class="section-desc">Ative ou desative categorias inteiras de sons para este ambiente.</p>
+                            <div id="category-toggles" class="mood-grid">
+                                <!-- Preenchido via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </main>
+
+                <div class="policy-actions">
+                    <button class="btn btn-ghost" onclick="UIManager.switchScreen('match-screen')">CANCELAR</button>
+                    <button class="btn btn-primary" id="save-policy-btn">APLICAR CONFIGURAÇÕES</button>
+                </div>
+            </div>
+        </section>
 
         <!-- Tela 1: Configuração -->
         <section id="setup-screen" class="screen active">
             <div class="setup-container">
                 <header class="setup-hero">
                     <div class="badge-fiba">FIBA APPROVED</div>
-                    <h1>DIGITAL <span>SCOREBOARD</span></h1>
-                    <p>Elite Match Management System</p>
+                    <h1>RITIMO DE <span>JOGO</span></h1>
+                    <p>Sistema de Gestão de Partidas</p>
                 </header>
                 
                 <main class="setup-grid">
@@ -33,7 +184,7 @@
                                 <input type="text" id="input-competition" placeholder="Ex: NBB 2024" value="NBB 2024">
                             </div>
                             <button class="btn-start-hero" id="start-match-btn">INICIAR PARTIDA ➔</button>
-                            <button class="btn btn-secondary btn-sm" id="clear-all-btn" style="height: 60px; margin-left: 10px; opacity: 0.5;">LIMPAR TUDO</button>
+                            <button class="btn" id="clear-all-btn">LIMPAR TUDO</button>
                         </div>
                     </div>
 
@@ -44,11 +195,14 @@
                                 <div class="color-picker-area">
                                     <label>COR DO TIME</label>
                                     <div class="color-picker-wrap">
-                                        <button class="color-preset" style="background:#ff0000" onclick="document.getElementById('home-color').value='#ff0000'"></button>
-                                        <button class="color-preset" style="background:#0000ff" onclick="document.getElementById('home-color').value='#0000ff'"></button>
-                                        <button class="color-preset" style="background:#008000" onclick="document.getElementById('home-color').value='#008000'"></button>
-                                        <button class="color-preset" style="background:#ffffff" onclick="document.getElementById('home-color').value='#ffffff'"></button>
-                                        <input type="color" id="home-color" value="#ff6b00" class="custom-color-input">
+                                        <button class="color-preset active" style="background:#ff0000" title="Vermelho" onclick="UIManager.selectTeamColor('home', '#ff0000', this)"></button>
+                                        <button class="color-preset" style="background:#0000ff" title="Azul" onclick="UIManager.selectTeamColor('home', '#0000ff', this)"></button>
+                                        <button class="color-preset" style="background:#ffffff" title="Branco" onclick="UIManager.selectTeamColor('home', '#ffffff', this)"></button>
+                                        <button class="color-preset" style="background:#333333" title="Preto" onclick="UIManager.selectTeamColor('home', '#333333', this)"></button>
+                                        <div class="custom-color-container" title="Cor Personalizada">
+                                            <input type="color" id="home-color" value="#ff0000" class="custom-color-hidden" oninput="UIManager.selectTeamColor('home', this.value, this.nextElementSibling)">
+                                            <button class="color-preset custom-trigger"></button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -68,11 +222,14 @@
                                 <div class="color-picker-area">
                                     <label>COR DO TIME</label>
                                     <div class="color-picker-wrap">
-                                        <button class="color-preset" style="background:#ff6b00" onclick="document.getElementById('away-color').value='#ff6b00'"></button>
-                                        <button class="color-preset" style="background:#2196f3" onclick="document.getElementById('away-color').value='#2196f3'"></button>
-                                        <button class="color-preset" style="background:#9c27b0" onclick="document.getElementById('away-color').value='#9c27b0'"></button>
-                                        <button class="color-preset" style="background:#333333" onclick="document.getElementById('away-color').value='#333333'"></button>
-                                        <input type="color" id="away-color" value="#2196f3" class="custom-color-input">
+                                        <button class="color-preset active" style="background:#ff6b00" title="Laranja" onclick="UIManager.selectTeamColor('away', '#ff6b00', this)"></button>
+                                        <button class="color-preset" style="background:#2196f3" title="Azul Claro" onclick="UIManager.selectTeamColor('away', '#2196f3', this)"></button>
+                                        <button class="color-preset" style="background:#9c27b0" title="Roxo" onclick="UIManager.selectTeamColor('away', '#9c27b0', this)"></button>
+                                        <button class="color-preset" style="background:#333333" title="Preto" onclick="UIManager.selectTeamColor('away', '#333333', this)"></button>
+                                        <div class="custom-color-container" title="Cor Personalizada">
+                                            <input type="color" id="away-color" value="#ff6b00" class="custom-color-hidden" oninput="UIManager.selectTeamColor('away', this.value, this.nextElementSibling)">
+                                            <button class="color-preset custom-trigger"></button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -205,7 +362,7 @@
             <div class="report-container glass-card">
                 <div class="report-header">
                     <h1>SÚMULA DA PARTIDA</h1>
-                    <p>Ritmo de Jogo - Coyotes Arena</p>
+                    <p>RITIMO DE JOGO - Coyotes Arena</p>
                 </div>
                 <div id="report-content"></div>
                 <div class="report-footer">

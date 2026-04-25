@@ -10,12 +10,12 @@ export const AudioPlaybackQueue = {
     // Maintain legacy library for soundboard compatibility
     library: LEGACY_CATALOG,
 
-    // Legacy method for compatibility
-    play(category) {
+    // Legacy method for compatibility - updated to support priority
+    play(category, priority = 5) {
         const files = this.library[category];
         if (files) {
             const file = files[Math.floor(Math.random() * files.length)];
-            this.addToQueue(category, file);
+            this.addToQueue(category, file, priority);
         }
     },
 
@@ -58,6 +58,7 @@ export const AudioPlaybackQueue = {
             this.isPlaying = false;
             this.currentItem = null;
             this.currentAudio = null;
+            if (window.UIManager) window.UIManager.renderSoundQueue();
             return;
         }
 
@@ -106,3 +107,5 @@ export const AudioPlaybackQueue = {
         if (window.UIManager) window.UIManager.renderSoundQueue();
     }
 };
+
+window.AudioPlaybackQueue = AudioPlaybackQueue;

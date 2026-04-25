@@ -1,10 +1,8 @@
 // src/core/event-dispatcher.js
 import { gameState } from './game-state.js';
 import { computeDerivedState } from './selectors.js';
-import { AudioDecisionEngine } from '../audio/audio-decision-engine.js';
-import { AUDIO_CATALOG } from '../audio/audio-catalog.js';
-import { AudioPlaybackQueue } from '../audio/audio-playback-queue.js';
-import { AudioHistory } from '../audio/audio-history.js';
+import { triggerAudio } from '../audio/audio-bridge.js';
+import { EVENT_TYPES } from './event-types.js';
 
 export function createGameEvent(type, payload = {}, context = {}) {
     return {
@@ -37,26 +35,24 @@ export function dispatchGameEvent(type, payload = {}) {
     gameState.events.push(event);
     gameState.derived = computeDerivedState(gameState);
 
-    // AUDIO DECISION
-    const selectedAsset = AudioDecisionEngine.decide({
-        event,
-        state: gameState,
-        catalog: AUDIO_CATALOG
-    });
-
-    if (selectedAsset) {
-        const queueItem = {
-            id: crypto.randomUUID(),
-            assetId: selectedAsset.id,
-            category: selectedAsset.tags[0] || 'auto',
-            file: selectedAsset.file,
-            sourceEventId: event.id,
-            sourceEventType: event.type,
-            requestedAt: Date.now()
-        };
-
-        AudioPlaybackQueue.addToQueue(queueItem.category, queueItem.file);
-        AudioHistory.add(selectedAsset.id, event.id);
+    // AUDIO DECISION VIA BRIDGE
+    // Mapeia EVENT_TYPES para os eventNames do triggerAudio
+    let audioEvent = null;
+    if (type === EVENT_TYPES.SCORE_MADE) audioEvent = 'score';
+    else if (type === EVENT_TYPES.TIMEOUT) audioEvent = 'timeout';
+    else if (type === EVENT_TYPES.FOUL_PERSONAL) audioEvent = 'foul';
+    else if (type === EVENT_TYPES.SUBSTITUTION) audioEvent = 'sub';
+    else if (type === EVENT_TYPES.POSSE_24) audioEvent = 'posse_24';
+    else if (type === EVENT_TYPES.POSSE_14) audioEvent = 'posse_14';
+    else if (type === EVENT_TYPES.PERIOD_END) audioEvent = 'period_end';
+    else if (type === EVENT_TYPES.COUNTDOWN_1M) audioEvent = 'countdown_1m';
+    else if (type === EVENT_TYPES.COUNTDOWN_24S) audioEvent = 'countdown_24s';
+    else if (type === EVENT_TYPES.COUNTDOWN_10S) audioEvent = 'countdown_10s';
+    else if (type === EVENT_TYPES.GAME_END) audioEvent = 'game_end';
+    else if (type === EVENT_TYPES.PERIOD_START) audioEvent = 'period_start';
+    
+    if (audioEvent) {
+        triggerAudio(audioEvent, payload, { source: 'automatic' });
     }
     
     window.UIManager.updateLog();

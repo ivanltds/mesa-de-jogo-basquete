@@ -20,6 +20,11 @@ export const gameState = {
     audio: {
         history: [],
         queue: [],
-        current: null
-    }
+        current: null,
+        policies: null // Será inicializado no bootstrap
+    },
+    ui: {
+        activeScreenId: 'setup-screen'
+    },
+    firedCountdowns: []
 };

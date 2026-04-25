@@ -10,5 +10,10 @@ export const EVENT_TYPES = {
     PERIOD_END: 'period.end',
     GAME_END: 'game.end',
     SHOT_CLOCK_VIOLATION: 'shotclock.violation',
-    TIMEOUT: 'timeout'
+    TIMEOUT: 'timeout',
+    POSSE_24: 'posse_24',
+    POSSE_14: 'posse_14',
+    COUNTDOWN_1M: 'countdown_1m',
+    COUNTDOWN_24S: 'countdown_24s',
+    COUNTDOWN_10S: 'countdown_10s'
 };

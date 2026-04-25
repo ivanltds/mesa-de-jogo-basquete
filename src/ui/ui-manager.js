@@ -1,8 +1,25 @@
 // src/ui/ui-manager.js
 import { gameState } from '../core/game-state.js';
 import { AudioPlaybackQueue as SoundManager } from '../audio/audio-playback-queue.js';
+import { INITIAL_AUDIO_PROFILES } from '../audio/audio-profiles.js';
 
 export const UIManager = {
+    // ... (keep all existing methods)
+    selectTeamColor(teamKey, color, element) {
+        const input = document.getElementById(`${teamKey}-color`);
+        if (input) {
+            input.value = color;
+            input.dispatchEvent(new Event('input'));
+        }
+        
+        // Find the top-level wrap
+        const wrap = element.closest('.color-picker-wrap');
+        if (wrap) {
+            wrap.querySelectorAll('.color-preset, .custom-trigger').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+        }
+    },
+
     renderReport() {
         const content = document.getElementById('report-content');
         if (!content) return;
@@ -41,11 +58,16 @@ export const UIManager = {
 
     switchScreen(screenId) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(screenId).classList.add('active');
+        const target = document.getElementById(screenId);
+        if (target) target.classList.add('active');
         
         // Sincroniza visibilidade de ferramentas de dev
         const app = document.getElementById('app');
         if (app) app.className = `screen-context-${screenId}`;
+
+        // Atualiza estado global da tela ativa
+        gameState.ui.previousScreenId = gameState.ui.activeScreenId;
+        gameState.ui.activeScreenId = screenId;
 
         if (screenId === 'match-screen') this.initMatchUI();
     },
@@ -207,7 +229,7 @@ export const UIManager = {
                     <div class="dj-pads-grid">
                         ${files.map(f => {
                             const escapedFile = f.replace(/'/g, "\\'");
-                            return `<button class="dj-pad ${cat}" onclick="SoundManager.playFile('${escapedFile}')" title="${f}"></button>`;
+                            return `<button class="dj-pad ${cat}" onclick="window.triggerManualAudio('${cat}', '${escapedFile}')" title="${f}"></button>`;
                         }).join('')}
                     </div>
                 </div>
@@ -311,5 +333,177 @@ export const UIManager = {
                 </div>
             `;
         }).join('');
+    },
+
+    initAudioPolicyScreen() {
+        const select = document.getElementById('policy-screen-select');
+        if (!select) return;
+
+        const profiles = gameState.audio.policies || INITIAL_AUDIO_PROFILES;
+        const allowed = ['match-screen', 'soundboard-screen'];
+        const entries = Object.entries(profiles).filter(([id]) => allowed.includes(id));
+
+        // Fill screen tiles
+        const nav = document.getElementById('policy-screen-selector');
+        select.innerHTML = entries.map(([id, p]) => `
+            <option value="${id}">${p.name}</option>
+        `).join('');
+
+        if (nav) {
+            nav.innerHTML = entries.map(([id, p]) => `
+                <div class="screen-tile ${select.value === id ? 'active' : ''}" 
+                     data-id="${id}" 
+                     onclick="UIManager.selectPolicyScreen('${id}')">
+                    ${p.name}
+                </div>
+            `).join('');
+        }
+
+        // Fill categories in all selects
+        const cats = Object.keys(SoundManager.library);
+        const catOptions = ['<option value="">Nenhum</option>']
+            .concat(cats.map(c => `<option value="${c}">${c.toUpperCase()}</option>`))
+            .join('');
+
+        const allSelects = [
+            'score-map-1', 'score-map-2', 'score-map-3',
+            'event-map-posse_24', 'event-map-posse_14', 
+            'event-map-foul', 'event-map-sub', 'event-map-timeout',
+            'event-map-period_end', 'event-map-countdown_1m', 'event-map-countdown_24s', 'event-map-countdown_10s', 'event-map-game_end'
+        ];
+
+        allSelects.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = catOptions;
+        });
+
+        // Listener for screen change
+        select.onchange = () => this.loadPolicyForScreen(select.value);
+
+        // Save button
+        document.getElementById('save-policy-btn').onclick = () => this.saveCurrentPolicy();
+
+        // Setup switch toggles
+        const setupSwitch = (id, checkId) => {
+            const el = document.getElementById(id);
+            const check = document.getElementById(checkId);
+            if (el && check) {
+                el.onclick = () => {
+                    check.checked = !check.checked;
+                    el.classList.toggle('active', check.checked);
+                };
+            }
+        };
+        setupSwitch('toggle-auto-audio', 'policy-allow-auto');
+        setupSwitch('toggle-manual-priority', 'policy-manual-priority');
+
+        // Load default (first)
+        this.loadPolicyForScreen(select.value);
+    },
+
+    loadPolicyForScreen(screenId) {
+        const profiles = gameState.audio.policies || INITIAL_AUDIO_PROFILES;
+        const profile = profiles[screenId];
+        if (!profile) return;
+
+        // Update Tiles
+        document.querySelectorAll('.screen-tile').forEach(t => {
+            t.classList.toggle('active', t.dataset.id === screenId);
+        });
+
+        // Atualiza switches visuais
+        document.getElementById('policy-allow-auto').checked = profile.allowAutomaticAudio;
+        document.getElementById('policy-manual-priority').checked = profile.manualPriority;
+        document.getElementById('toggle-auto-audio').classList.toggle('active', profile.allowAutomaticAudio);
+        document.getElementById('toggle-manual-priority').classList.toggle('active', profile.manualPriority);
+
+        // Conditional Visibility
+        const isMatch = screenId === 'match-screen';
+        const cardBehavior = document.getElementById('card-behavior');
+        const cardEvents = document.getElementById('card-events-unified');
+        
+        if (cardBehavior) cardBehavior.style.display = isMatch ? 'block' : 'none';
+        if (cardEvents) cardEvents.style.display = isMatch ? 'block' : 'none';
+
+        // Update Grid Layout if needed
+        const grid = document.querySelector('.policy-main-grid');
+        if (grid) {
+            grid.style.gridTemplateColumns = isMatch ? '1fr 1fr' : '1fr';
+        }
+
+        // Score map
+        document.getElementById('score-map-1').value = profile.scoreCategories?.[1] || '';
+        document.getElementById('score-map-2').value = profile.scoreCategories?.[2] || '';
+        document.getElementById('score-map-3').value = profile.scoreCategories?.[3] || '';
+
+        // Event map
+        const eventKeys = [
+            'posse_24', 'posse_14', 'foul', 'sub', 'timeout',
+            'period_end', 'countdown_1m', 'countdown_24s', 'countdown_10s', 'game_end'
+        ];
+        eventKeys.forEach(k => {
+            const el = document.getElementById(`event-map-${k}`);
+            if (el) el.value = profile.eventCategories?.[k] || '';
+        });
+
+        // Category toggles (Mood Grid)
+        const cats = Object.keys(SoundManager.library);
+        const container = document.getElementById('category-toggles');
+        container.innerHTML = cats.map(cat => {
+            const isBlocked = profile.blockedCategories.includes(cat);
+            return `
+                <div class="mood-badge ${!isBlocked ? 'active' : ''}" onclick="UIManager.toggleCategoryPolicy('${screenId}', '${cat}')">
+                    <div class="mood-status"></div>
+                    <span>${cat.toUpperCase()}</span>
+                </div>
+            `;
+        }).join('');
+    },
+
+    selectPolicyScreen(screenId) {
+        const select = document.getElementById('policy-screen-select');
+        if (select) {
+            select.value = screenId;
+            this.loadPolicyForScreen(screenId);
+        }
+    },
+
+    toggleCategoryPolicy(screenId, cat) {
+        if (!gameState.audio.policies) {
+            gameState.audio.policies = JSON.parse(JSON.stringify(INITIAL_AUDIO_PROFILES));
+        }
+        const profile = gameState.audio.policies[screenId];
+        if (profile.blockedCategories.includes(cat)) {
+            profile.blockedCategories = profile.blockedCategories.filter(c => c !== cat);
+        } else {
+            profile.blockedCategories.push(cat);
+        }
+        this.loadPolicyForScreen(screenId);
+    },
+
+    saveCurrentPolicy() {
+        const screenId = document.getElementById('policy-screen-select').value;
+        const profile = gameState.audio.policies[screenId];
+
+        profile.allowAutomaticAudio = document.getElementById('policy-allow-auto').checked;
+        profile.manualPriority = document.getElementById('policy-manual-priority').checked;
+
+        if (!profile.scoreCategories) profile.scoreCategories = {};
+        profile.scoreCategories[1] = document.getElementById('score-map-1').value || null;
+        profile.scoreCategories[2] = document.getElementById('score-map-2').value || null;
+        profile.scoreCategories[3] = document.getElementById('score-map-3').value || null;
+
+        if (!profile.eventCategories) profile.eventCategories = {};
+        const eventKeys = [
+            'posse_24', 'posse_14', 'foul', 'sub', 'timeout',
+            'period_end', 'countdown_1m', 'countdown_24s', 'countdown_10s', 'game_end'
+        ];
+        eventKeys.forEach(k => {
+            const el = document.getElementById(`event-map-${k}`);
+            if (el) profile.eventCategories[k] = el.value || null;
+        });
+
+        window.saveState();
+        window.notify("Políticas de áudio salvas!");
     }
 };
