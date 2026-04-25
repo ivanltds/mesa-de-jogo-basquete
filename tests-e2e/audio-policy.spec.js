@@ -36,13 +36,15 @@ test.describe('FIBA Scoreboard - Inteligência Sonora (Audio Policy)', () => {
     await page.click('button:has-text("CANCELAR")');
     await expect(page.locator('#match-screen')).toBeVisible();
 
-    // 6. Prepara espião para o SoundManager
     await page.evaluate(() => {
         window.audioHistory = [];
         const originalPlay = window.AudioPlaybackQueue.play;
         window.AudioPlaybackQueue.play = (cat, prio) => {
             window.audioHistory.push({ cat, prio });
-            // Não chamamos o original para não fazer barulho/delay no teste se não houver arquivos
+        };
+        // Também espiona addToQueue (usado pelo disparo inteligente)
+        window.AudioPlaybackQueue.addToQueue = (cat, file, prio) => {
+            window.audioHistory.push({ cat, prio });
         };
     });
 
@@ -71,10 +73,10 @@ test.describe('FIBA Scoreboard - Inteligência Sonora (Audio Policy)', () => {
     await page.click('#save-policy-btn');
     await page.click('button:has-text("CANCELAR")');
 
-    // Prepara espião
     await page.evaluate(() => {
         window.audioHistory = [];
         window.AudioPlaybackQueue.play = (cat, prio) => window.audioHistory.push({ cat, prio });
+        window.AudioPlaybackQueue.addToQueue = (cat, file, prio) => window.audioHistory.push({ cat, prio });
     });
 
     // Adiciona ponto
