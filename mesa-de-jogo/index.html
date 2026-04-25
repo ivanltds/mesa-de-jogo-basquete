@@ -16,6 +16,7 @@
             <button id="mock-data-btn" class="btn btn-secondary btn-sm">TIMES DE TESTE</button>
             <button id="restart-match-btn" class="btn btn-danger btn-sm">REINICIAR PARTIDA</button>
             <button id="audio-policy-btn" class="btn btn-primary btn-sm">GESTÃO DE ÁUDIO</button>
+            <button id="audio-scoring-btn" class="btn btn-warning btn-sm">SCORE DE ÁUDIO</button>
         </div>
 
         <!-- Tela 4: Gestão de Áudio (Novo) -->
@@ -165,6 +166,218 @@
                 </div>
             </div>
         </section>
+        
+        <!-- Tela 5: Gestão Visual de Score (Novo) -->
+        <section id="audio-scoring-screen" class="screen">
+            <div class="scoring-container glass-card">
+                <header class="scoring-header">
+                    <div class="scoring-badge">DECISION ENGINE</div>
+                    <h1>GESTÃO DE <span>SCORE</span></h1>
+                    <p>Controle os pesos do algoritmo de seleção e simule decisões de áudio.</p>
+                </header>
+                
+                <main class="scoring-layout">
+                    <!-- Bloco A: Regras de Score -->
+                    <div class="scoring-panel rules-panel">
+                        <div class="panel-header">
+                            <h3><span class="panel-icon">⚙️</span> PESOS DO ALGORITMO</h3>
+                            <div class="panel-actions">
+                                <button class="btn btn-sm btn-outline" id="reset-rules-btn">RESET DEFAULT</button>
+                            </div>
+                        </div>
+                        
+                        <div class="rules-scroll-area">
+                            <form id="scoring-rules-form">
+                                <div class="rule-group">
+                                    <h4>CONTEXTO / CESTAS</h4>
+                                    <div class="rule-field">
+                                        <label>Bônus Cesta de 3</label>
+                                        <input type="number" name="context.scoreMade.threePointBonus" step="1">
+                                    </div>
+                                    <div class="rule-field">
+                                        <label>Bônus Jogo Próximo</label>
+                                        <input type="number" name="context.scoreMade.closeGameBonus" step="1">
+                                    </div>
+                                    <div class="rule-field">
+                                        <label>Bônus Tag Clutch</label>
+                                        <input type="number" name="context.scoreMade.clutchTagBonus" step="1">
+                                    </div>
+                                </div>
+
+                                <div class="rule-group">
+                                    <h4>CONTEXTO / ERROS</h4>
+                                    <div class="rule-field">
+                                        <label>Bônus Tag Fun</label>
+                                        <input type="number" name="context.shotMissed.funTagBonus" step="1">
+                                    </div>
+                                </div>
+
+                                <div class="rule-group">
+                                    <h4>CONTEXTO / FIM DE TEMPO</h4>
+                                    <div class="rule-field">
+                                        <label>Bônus Oficial (Period)</label>
+                                        <input type="number" name="context.periodEnd.officialTagBonus" step="1">
+                                    </div>
+                                    <div class="rule-field">
+                                        <label>Bônus Oficial (Game)</label>
+                                        <input type="number" name="context.gameEnd.officialTagBonus" step="1">
+                                    </div>
+                                    <div class="rule-field">
+                                        <label>Bônus Oficial (Timeout)</label>
+                                        <input type="number" name="context.timeout.officialTagBonus" step="1">
+                                    </div>
+                                </div>
+
+                                <div class="rule-group">
+                                    <h4>CONTEXTO / FALTAS</h4>
+                                    <div class="rule-field">
+                                        <label>Penalidade Falta Comum</label>
+                                        <input type="number" name="context.foulPersonal.regularFoulPenalty" step="1">
+                                    </div>
+                                    <div class="rule-field">
+                                        <label>Bônus Exclusão Oficial</label>
+                                        <input type="number" name="context.foulPersonal.exclusionOfficialBonus" step="1">
+                                    </div>
+                                </div>
+
+                                <div class="rule-group">
+                                    <h4>RECÊNCIA (COOLDOWN)</h4>
+                                    <div class="rule-field">
+                                        <label>Bônus Sem Repetição</label>
+                                        <input type="number" name="recency.noRepeatBonus" step="1">
+                                    </div>
+                                    <div class="rule-field">
+                                        <label>Penalidade Repetição</label>
+                                        <input type="number" name="recency.repeatPenaltyPerOccurrence" step="1">
+                                    </div>
+                                    <div class="rule-field">
+                                        <label>Janela de Recência</label>
+                                        <input type="number" name="recency.recentWindow" step="1">
+                                    </div>
+                                </div>
+
+                                <div class="rule-group">
+                                    <h4>INTENSIDADE</h4>
+                                    <div class="rule-field">
+                                        <label>Bônus Alta Int. (Fim)</label>
+                                        <input type="number" name="intensity.highIntensityPeriodEndBonus" step="1">
+                                    </div>
+                                    <div class="rule-field">
+                                        <label>Penalidade Baixa Int. (Fim)</label>
+                                        <input type="number" name="intensity.lowIntensityPeriodEndPenalty" step="1">
+                                    </div>
+                                    <div class="rule-field">
+                                        <label>Bônus Alta Int. (Clutch)</label>
+                                        <input type="number" name="intensity.highIntensityClutchBonus" step="1">
+                                    </div>
+                                    <div class="rule-field">
+                                        <label>Bônus Int. Média (Default)</label>
+                                        <input type="number" name="intensity.mediumIntensityDefaultBonus" step="1">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="panel-footer">
+                            <button class="btn btn-primary full-width" id="save-rules-btn">SALVAR REGRAS</button>
+                        </div>
+                    </div>
+
+                    <!-- Bloco B: Simulador -->
+                    <div class="scoring-panel simulator-panel">
+                        <div class="panel-header">
+                            <h3><span class="panel-icon">🧪</span> SIMULADOR DE CONTEXTO</h3>
+                        </div>
+                        
+                        <div class="simulator-content">
+                            <form id="simulation-form">
+                                <div class="sim-group">
+                                    <label>EVENTO</label>
+                                    <select name="eventType" id="sim-event-type" class="sim-select">
+                                        <option value="score.made">Cesta (+1, +2, +3)</option>
+                                        <option value="shot.missed">Erro de Arremesso</option>
+                                        <option value="timeout">Pedido de Tempo</option>
+                                        <option value="period.end">Fim de Período</option>
+                                        <option value="game.end">Fim de Jogo</option>
+                                        <option value="foul.personal">Falta Pessoal</option>
+                                    </select>
+                                </div>
+
+                                <div class="sim-payload-area" id="sim-payload-score">
+                                    <label>VALOR DA CESTA</label>
+                                    <div class="sim-radio-group">
+                                        <label><input type="radio" name="scoreValue" value="1"> 1pt</label>
+                                        <label><input type="radio" name="scoreValue" value="2" checked> 2pts</label>
+                                        <label><input type="radio" name="scoreValue" value="3"> 3pts</label>
+                                    </div>
+                                </div>
+
+                                <div class="sim-payload-area" id="sim-payload-foul" style="display: none;">
+                                    <label><input type="checkbox" name="isExclusion" value="true"> Exclusão (5ª falta)</label>
+                                </div>
+
+                                <div class="sim-divider"></div>
+
+                                <div class="sim-group">
+                                    <label>ESTADO DO JOGO</label>
+                                    <div class="sim-field-row">
+                                        <div class="sim-field">
+                                            <label>Período</label>
+                                            <input type="number" name="period" value="1" min="1" max="6">
+                                        </div>
+                                        <div class="sim-field">
+                                            <label>Diferença Placar</label>
+                                            <input type="number" name="scoreDiff" value="0">
+                                        </div>
+                                    </div>
+                                    <div class="sim-field">
+                                        <label><input type="checkbox" name="clutch" value="true"> Forçar Momento Clutch</label>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <button class="btn btn-warning btn-xl full-width" id="run-simulation-btn">EXECUTAR SIMULAÇÃO</button>
+
+                            <div class="sim-divider"></div>
+
+                            <div id="sim-winner-container">
+                                <!-- Preenchido via JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bloco C: Ranking -->
+                    <div class="scoring-panel ranking-panel">
+                        <div class="panel-header">
+                            <h3><span class="panel-icon">📊</span> RANKING DE CANDIDATOS</h3>
+                        </div>
+                        
+                        <div class="ranking-scroll-area">
+                            <table class="ranking-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>ASSET</th>
+                                        <th>TAGS</th>
+                                        <th>INT</th>
+                                        <th>SCORE</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ranking-body">
+                                    <!-- Preenchido via JS -->
+                                </tbody>
+                            </table>
+                            <div id="ranking-empty" class="empty-state">
+                                Nenhuma simulação executada.
+                            </div>
+                        </div>
+                    </div>
+                </main>
+
+                <div class="scoring-actions">
+                    <button class="btn btn-ghost" onclick="UIManager.switchScreen('match-screen')">FECHAR GESTÃO</button>
+                </div>
+            </div>
 
         <!-- Tela 1: Configuração -->
         <section id="setup-screen" class="screen active">

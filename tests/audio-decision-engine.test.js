@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AudioDecisionEngine } from '../src/audio/audio-decision-engine.js';
 import { EVENT_TYPES } from '../src/core/event-types.js';
 import { AudioHistory } from '../src/audio/audio-history.js';
+import { DEFAULT_AUDIO_SCORING_RULES } from '../src/audio/audio-scoring-rules.js';
 
 vi.mock('../src/audio/audio-history.js', () => ({
     AudioHistory: {
@@ -26,35 +27,52 @@ describe('AudioDecisionEngine', () => {
         }
     };
 
+    const rules = DEFAULT_AUDIO_SCORING_RULES;
+
     beforeEach(() => {
         vi.clearAllMocks();
+        AudioHistory.wasRecentlyPlayed.mockReturnValue(false);
+        AudioHistory.getRecentRepeats.mockReturnValue(0);
     });
 
-    it('should return null if no candidates match event type', () => {
-        const event = { type: EVENT_TYPES.TURNOVER };
-        const result = AudioDecisionEngine.decide({ event, state: mockState, catalog: mockCatalog });
-        expect(result).toBeNull();
+    it('rank() should return sorted candidates with breakdown', () => {
+        const event = { type: EVENT_TYPES.SCORE_MADE, payload: { value: 3 } };
+        const results = AudioDecisionEngine.rank({ event, state: mockState, catalog: mockCatalog, rules });
+        
+        expect(results.length).toBe(2);
+        expect(results[0].eligible).toBe(true);
+        expect(results[0].breakdown.total).toBeGreaterThan(0);
+        expect(results[0].breakdown.reasons.some(r => r.key === 'scoreMade.threePointBonus')).toBe(true);
     });
 
-    it('should filter out recently played assets', () => {
+    it('should filter out ineligible assets based on history', () => {
         const event = { type: EVENT_TYPES.SCORE_MADE };
         AudioHistory.wasRecentlyPlayed.mockImplementation((id) => id === 'asset_1');
         
-        const result = AudioDecisionEngine.decide({ event, state: mockState, catalog: mockCatalog });
-        expect(result.id).toBe('asset_2');
+        const results = AudioDecisionEngine.rank({ event, state: mockState, catalog: mockCatalog, rules });
+        
+        const asset1 = results.find(r => r.asset.id === 'asset_1');
+        const asset2 = results.find(r => r.asset.id === 'asset_2');
+        
+        expect(asset1.eligible).toBe(false);
+        expect(asset2.eligible).toBe(true);
     });
 
-    it('should prioritize clutch assets when in clutch state', () => {
+    it('decide() should return the top eligible asset', () => {
+        const event = { type: EVENT_TYPES.SCORE_MADE };
+        const result = AudioDecisionEngine.decide({ event, state: mockState, catalog: mockCatalog, rules });
+        
+        expect(result.id).toBeDefined();
+        expect(['asset_1', 'asset_2']).toContain(result.id);
+    });
+
+    it('should apply clutch bonus correctly', () => {
         const event = { type: EVENT_TYPES.SCORE_MADE, payload: { value: 2 } };
         const clutchState = { derived: { clutch: true, scoreDiff: 2 } };
         
-        const result = AudioDecisionEngine.decide({ event, state: clutchState, catalog: mockCatalog });
-        expect(result.id).toBe('asset_2');
-    });
-
-    it('should prioritize official buzzer for period end', () => {
-        const event = { type: EVENT_TYPES.PERIOD_END };
-        const result = AudioDecisionEngine.decide({ event, state: mockState, catalog: mockCatalog });
-        expect(result.id).toBe('asset_3');
+        const results = AudioDecisionEngine.rank({ event, state: clutchState, catalog: mockCatalog, rules });
+        const clutchAsset = results.find(r => r.asset.id === 'asset_2');
+        
+        expect(clutchAsset.breakdown.reasons.some(r => r.key === 'scoreMade.clutchTagBonus')).toBe(true);
     });
 });

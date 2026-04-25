@@ -2,6 +2,9 @@
 import { gameState } from '../core/game-state.js';
 import { INITIAL_AUDIO_PROFILES } from './audio-profiles.js';
 import { AudioPlaybackQueue as SoundManager } from './audio-playback-queue.js';
+import { AudioDecisionEngine } from './audio-decision-engine.js';
+import { AUDIO_CATALOG } from './audio-catalog.js';
+import { EVENT_TYPES } from '../core/event-types.js';
 
 function getProfile(screenId) {
   const policies = gameState.audio?.policies || INITIAL_AUDIO_PROFILES;
@@ -65,7 +68,7 @@ export function triggerAudio(eventName, payload = {}, options = {}) {
     return null;
   }
 
-  // Regra 2: Resolução de categoria
+  // Regra 2: Resolução de categoria (para filtros de blacklist)
   const category = resolveCategoryForEvent(eventName, payload, profile, source);
   if (!category) return null;
 
@@ -74,7 +77,38 @@ export function triggerAudio(eventName, payload = {}, options = {}) {
     return null;
   }
   
-  // Disparo real
+  // Disparo inteligente via Engine
+  if (source === 'automatic') {
+    // Mapeia eventName de volta para EVENT_TYPES
+    let eventType = null;
+    if (eventName === 'score') eventType = EVENT_TYPES.SCORE_MADE;
+    else if (eventName === 'timeout') eventType = EVENT_TYPES.TIMEOUT;
+    else if (eventName === 'foul') eventType = EVENT_TYPES.FOUL_PERSONAL;
+    else if (eventName === 'sub') eventType = EVENT_TYPES.SUBSTITUTION;
+    else if (eventName === 'posse_24') eventType = EVENT_TYPES.POSSE_24;
+    else if (eventName === 'posse_14') eventType = EVENT_TYPES.POSSE_14;
+    else if (eventName === 'period_end') eventType = EVENT_TYPES.PERIOD_END;
+    else if (eventName === 'countdown_1m') eventType = EVENT_TYPES.COUNTDOWN_1M;
+    else if (eventName === 'countdown_24s') eventType = EVENT_TYPES.COUNTDOWN_24S;
+    else if (eventName === 'countdown_10s') eventType = EVENT_TYPES.COUNTDOWN_10S;
+    else if (eventName === 'game_end') eventType = EVENT_TYPES.GAME_END;
+
+    if (eventType) {
+      const chosenAsset = AudioDecisionEngine.decide({
+        event: { type: eventType, payload },
+        state: gameState,
+        catalog: AUDIO_CATALOG,
+        rules: gameState.audio.scoringRules
+      });
+
+      if (chosenAsset) {
+        SoundManager.addToQueue(category, chosenAsset.file, 5, chosenAsset.id);
+        return category;
+      }
+    }
+  }
+
+  // Fallback ou Manual
   const priority = source === 'manual' ? 10 : 5;
   
   // Se for manual e tiver prioridade, corta o que estiver tocando

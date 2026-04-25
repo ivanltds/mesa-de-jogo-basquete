@@ -5,6 +5,7 @@ import { GameEngine } from '../core/game-engine.js';
 import { ClockEngine } from '../core/clock-engine.js';
 import { triggerAudio, triggerManualAudio } from '../audio/audio-bridge.js';
 import { INITIAL_AUDIO_PROFILES } from '../audio/audio-profiles.js';
+import { DEFAULT_AUDIO_SCORING_RULES } from '../audio/audio-scoring-rules.js';
 
 window.triggerAudio = triggerAudio;
 window.triggerManualAudio = triggerManualAudio;
@@ -411,6 +412,11 @@ document.addEventListener('DOMContentLoaded', () => {
         UIManager.initAudioPolicyScreen();
     };
 
+    if (document.getElementById('audio-scoring-btn')) document.getElementById('audio-scoring-btn').onclick = () => {
+        UIManager.switchScreen('audio-scoring-screen');
+        UIManager.initAudioScoringScreen();
+    };
+
     if (document.getElementById('mystery-btn')) document.getElementById('mystery-btn').onclick = () => window.triggerManualAudio('esquisito');
     if (document.getElementById('fun-btn')) document.getElementById('fun-btn').onclick = () => window.triggerManualAudio('divertido');
     
@@ -425,6 +431,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inicializa políticas de áudio se não existirem
     if (!gameState.audio.policies) {
         gameState.audio.policies = JSON.parse(JSON.stringify(INITIAL_AUDIO_PROFILES));
+    }
+
+    // Inicializa regras de score se não existirem
+    if (!gameState.audio.scoringRules) {
+        gameState.audio.scoringRules = JSON.parse(JSON.stringify(DEFAULT_AUDIO_SCORING_RULES));
     }
 
     UIManager.updateScoreboard();

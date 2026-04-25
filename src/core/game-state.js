@@ -21,7 +21,8 @@ export const gameState = {
         history: [],
         queue: [],
         current: null,
-        policies: null // Será inicializado no bootstrap
+        policies: null, // Será inicializado no bootstrap
+        scoringRules: null // Será inicializado no bootstrap
     },
     ui: {
         activeScreenId: 'setup-screen'

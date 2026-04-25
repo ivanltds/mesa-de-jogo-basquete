@@ -2,6 +2,10 @@
 import { gameState } from '../core/game-state.js';
 import { AudioPlaybackQueue as SoundManager } from '../audio/audio-playback-queue.js';
 import { INITIAL_AUDIO_PROFILES } from '../audio/audio-profiles.js';
+import { AudioDecisionEngine } from '../audio/audio-decision-engine.js';
+import { AUDIO_CATALOG } from '../audio/audio-catalog.js';
+import { AudioScoringUtils } from '../audio/audio-scoring-utils.js';
+import { EVENT_TYPES } from '../core/event-types.js';
 
 export const UIManager = {
     // ... (keep all existing methods)
@@ -505,5 +509,181 @@ export const UIManager = {
 
         window.saveState();
         window.notify("Políticas de áudio salvas!");
+    },
+
+    // --- GESTÃO DE SCORE ---
+
+    initAudioScoringScreen() {
+        this.populateScoringRulesForm();
+
+        // Rules handlers
+        document.getElementById('save-rules-btn').onclick = () => this.saveScoringRules();
+        document.getElementById('reset-rules-btn').onclick = () => this.resetScoringRules();
+
+        // Simulator handlers
+        const eventTypeSelect = document.getElementById('sim-event-type');
+        eventTypeSelect.onchange = () => {
+            document.getElementById('sim-payload-score').style.display = eventTypeSelect.value === EVENT_TYPES.SCORE_MADE ? 'block' : 'none';
+            document.getElementById('sim-payload-foul').style.display = eventTypeSelect.value === EVENT_TYPES.FOUL_PERSONAL ? 'block' : 'none';
+        };
+
+        document.getElementById('run-simulation-btn').onclick = () => this.runAudioScoringSimulation();
+    },
+
+    populateScoringRulesForm() {
+        const rules = AudioScoringUtils.getScoringRulesSnapshot(gameState);
+        const form = document.getElementById('scoring-rules-form');
+        if (!form) return;
+
+        const setVal = (name, val) => {
+            const input = form.querySelector(`[name="${name}"]`);
+            if (input) input.value = val;
+        };
+
+        // Context
+        setVal('context.scoreMade.threePointBonus', rules.context.scoreMade.threePointBonus);
+        setVal('context.scoreMade.closeGameBonus', rules.context.scoreMade.closeGameBonus);
+        setVal('context.scoreMade.clutchTagBonus', rules.context.scoreMade.clutchTagBonus);
+        setVal('context.shotMissed.funTagBonus', rules.context.shotMissed.funTagBonus);
+        setVal('context.periodEnd.officialTagBonus', rules.context.periodEnd.officialTagBonus);
+        setVal('context.gameEnd.officialTagBonus', rules.context.gameEnd.officialTagBonus);
+        setVal('context.timeout.officialTagBonus', rules.context.timeout.officialTagBonus);
+        setVal('context.foulPersonal.regularFoulPenalty', rules.context.foulPersonal.regularFoulPenalty);
+        setVal('context.foulPersonal.exclusionOfficialBonus', rules.context.foulPersonal.exclusionOfficialBonus);
+
+        // Recency
+        setVal('recency.noRepeatBonus', rules.recency.noRepeatBonus);
+        setVal('recency.repeatPenaltyPerOccurrence', rules.recency.repeatPenaltyPerOccurrence);
+        setVal('recency.recentWindow', rules.recency.recentWindow);
+
+        // Intensity
+        setVal('intensity.highIntensityPeriodEndBonus', rules.intensity.highIntensityPeriodEndBonus);
+        setVal('intensity.lowIntensityPeriodEndPenalty', rules.intensity.lowIntensityPeriodEndPenalty);
+        setVal('intensity.highIntensityClutchBonus', rules.intensity.highIntensityClutchBonus);
+        setVal('intensity.mediumIntensityDefaultBonus', rules.intensity.mediumIntensityDefaultBonus);
+    },
+
+    saveScoringRules() {
+        const form = document.getElementById('scoring-rules-form');
+        const rules = JSON.parse(JSON.stringify(gameState.audio.scoringRules));
+
+        const getVal = (name) => parseInt(form.querySelector(`[name="${name}"]`).value);
+
+        rules.context.scoreMade.threePointBonus = getVal('context.scoreMade.threePointBonus');
+        rules.context.scoreMade.closeGameBonus = getVal('context.scoreMade.closeGameBonus');
+        rules.context.scoreMade.clutchTagBonus = getVal('context.scoreMade.clutchTagBonus');
+        rules.context.shotMissed.funTagBonus = getVal('context.shotMissed.funTagBonus');
+        rules.context.periodEnd.officialTagBonus = getVal('context.periodEnd.officialTagBonus');
+        rules.context.gameEnd.officialTagBonus = getVal('context.gameEnd.officialTagBonus');
+        rules.context.timeout.officialTagBonus = getVal('context.timeout.officialTagBonus');
+        rules.context.foulPersonal.regularFoulPenalty = getVal('context.foulPersonal.regularFoulPenalty');
+        rules.context.foulPersonal.exclusionOfficialBonus = getVal('context.foulPersonal.exclusionOfficialBonus');
+
+        rules.recency.noRepeatBonus = getVal('recency.noRepeatBonus');
+        rules.recency.repeatPenaltyPerOccurrence = getVal('recency.repeatPenaltyPerOccurrence');
+        rules.recency.recentWindow = getVal('recency.recentWindow');
+
+        rules.intensity.highIntensityPeriodEndBonus = getVal('intensity.highIntensityPeriodEndBonus');
+        rules.intensity.lowIntensityPeriodEndPenalty = getVal('intensity.lowIntensityPeriodEndPenalty');
+        rules.intensity.highIntensityClutchBonus = getVal('intensity.highIntensityClutchBonus');
+        rules.intensity.mediumIntensityDefaultBonus = getVal('intensity.mediumIntensityDefaultBonus');
+
+        gameState.audio.scoringRules = rules;
+        window.saveState();
+        window.notify("Regras de score salvas!");
+    },
+
+    resetScoringRules() {
+        AudioScoringUtils.resetScoringRules(gameState);
+        this.populateScoringRulesForm();
+        window.notify("Regras resetadas para o padrão.");
+    },
+
+    runAudioScoringSimulation() {
+        const form = document.getElementById('simulation-form');
+        const formData = new FormData(form);
+        const values = Object.fromEntries(formData.entries());
+        
+        // Handle checkboxes/radios not in entries if unchecked
+        values.clutch = form.querySelector('[name="clutch"]').checked;
+        values.isExclusion = form.querySelector('[name="isExclusion"]').checked;
+
+        const simEvent = AudioScoringUtils.buildSimulationEvent(values);
+        const simState = AudioScoringUtils.buildSimulationState(values, gameState);
+
+        const results = AudioDecisionEngine.rank({
+            event: simEvent,
+            state: simState,
+            catalog: AUDIO_CATALOG,
+            rules: gameState.audio.scoringRules
+        });
+
+        this.renderAudioScoringRanking(results);
+        
+        const winner = results.find(r => r.eligible);
+        this.renderAudioScoringWinner(winner);
+    },
+
+    renderAudioScoringRanking(results) {
+        const body = document.getElementById('ranking-body');
+        const empty = document.getElementById('ranking-empty');
+        if (!body) return;
+
+        if (results.length === 0) {
+            body.innerHTML = '';
+            empty.style.display = 'block';
+            return;
+        }
+
+        empty.style.display = 'none';
+        body.innerHTML = results.map((r, i) => {
+            const isWinner = i === 0 && r.eligible;
+            return `
+                <tr class="ranking-row ${isWinner ? 'winner' : ''} ${!r.eligible ? 'ineligible' : ''}">
+                    <td>${i + 1}</td>
+                    <td>
+                        <div class="asset-id">${r.asset.id}</div>
+                        <div class="asset-file">${r.asset.file}</div>
+                    </td>
+                    <td>${r.asset.tags.join(', ')}</td>
+                    <td>${r.asset.intensity}</td>
+                    <td>
+                        <div class="total-score">${r.breakdown.total}</div>
+                        <button class="breakdown-btn" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">🔍</button>
+                        <div class="reason-list" style="display: none;">
+                            ${r.breakdown.reasons.map(reason => `
+                                <div class="reason-item">
+                                    ${reason.label}: <span class="reason-value ${reason.value < 0 ? 'negative' : ''}">${reason.value > 0 ? '+' : ''}${reason.value}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    },
+
+    renderAudioScoringWinner(result) {
+        const container = document.getElementById('sim-winner-container');
+        if (!container) return;
+
+        if (!result) {
+            container.innerHTML = '<div class="winner-card ineligible">Nenhum asset elegível</div>';
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="winner-card">
+                <h4>ASSET VENCEDOR</h4>
+                <div class="winner-asset-name">${result.asset.id}</div>
+                <div class="winner-stats">
+                    <span>Score Total: <span class="winner-score-pill">${result.breakdown.total}</span></span>
+                    <span>Intensidade: ${result.asset.intensity}</span>
+                </div>
+                <div class="winner-reasons" style="font-size: 0.75rem; margin-top: 1rem; color: #aaa;">
+                    ${result.breakdown.reasons.slice(0, 2).map(r => r.label).join(' • ')}...
+                </div>
+            </div>
+        `;
     }
 };
