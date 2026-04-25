@@ -1,10 +1,11 @@
 // src/audio/audio-decision-engine.js
 import { AudioHistory } from './audio-history.js';
 import { EVENT_TYPES } from '../core/event-types.js';
+import { DEFAULT_AUDIO_SCORING_RULES } from './audio-scoring-rules.js';
 
 export const AudioDecisionEngine = {
     decide({ event, state, catalog, rules }) {
-        const activeRules = rules || state.audio.scoringRules;
+        const activeRules = rules || state?.audio?.scoringRules || DEFAULT_AUDIO_SCORING_RULES;
         const ranked = this.rank({ event, state, catalog, rules: activeRules });
         
         const chosen = ranked.find(r => r.eligible)?.asset ?? null;
@@ -20,7 +21,7 @@ export const AudioDecisionEngine = {
     },
 
     rank({ event, state, catalog, rules }) {
-        const activeRules = rules || state.audio.scoringRules;
+        const activeRules = rules || state?.audio?.scoringRules || DEFAULT_AUDIO_SCORING_RULES;
         const candidates = this.getCandidates(event, catalog);
         
         return candidates.map(asset => {

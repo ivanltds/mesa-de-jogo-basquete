@@ -3,6 +3,8 @@ import { gameState } from '../core/game-state.js';
 
 export const AudioHistory = {
     add(assetId, eventId) {
+        if (!gameState?.audio?.history) return;
+        
         gameState.audio.history.push({
             assetId,
             eventId,
@@ -16,7 +18,7 @@ export const AudioHistory = {
     },
 
     getLastPlayed(assetId) {
-        return gameState.audio.history.findLast(h => h.assetId === assetId);
+        return gameState?.audio?.history?.findLast?.(h => h.assetId === assetId);
     },
 
     wasRecentlyPlayed(assetId, cooldownMs) {
@@ -26,7 +28,8 @@ export const AudioHistory = {
     },
 
     getRecentRepeats(assetId, windowSize = 10) {
-        const recent = gameState.audio.history.slice(-windowSize);
+        const history = gameState?.audio?.history || [];
+        const recent = history.slice(-windowSize);
         return recent.filter(h => h.assetId === assetId).length;
     }
 };

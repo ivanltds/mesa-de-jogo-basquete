@@ -13,7 +13,16 @@ vi.mock('../src/core/game-state.js', () => ({
 vi.mock('../src/audio/audio-playback-queue.js', () => ({
     AudioPlaybackQueue: {
         play: vi.fn(),
-        playFile: vi.fn()
+        playFile: vi.fn(),
+        addToQueue: vi.fn(),
+        skip: vi.fn()
+    }
+}));
+
+vi.mock('../src/audio/audio-decision-engine.js', () => ({
+    AudioDecisionEngine: {
+        decide: vi.fn(() => ({ id: 'mock-asset', file: 'mock.mp3' })),
+        rank: vi.fn(() => [])
     }
 }));
 
@@ -52,7 +61,6 @@ describe('AudioBridge - triggerManualAudio', () => {
             }
         };
         SoundManager.isPlaying = true;
-        SoundManager.skip = vi.fn();
         
         triggerManualAudio('cesta');
         expect(SoundManager.skip).toHaveBeenCalled();
@@ -68,7 +76,6 @@ describe('AudioBridge - triggerManualAudio', () => {
             }
         };
         SoundManager.isPlaying = true;
-        SoundManager.skip = vi.fn();
         
         triggerManualAudio('cesta');
         expect(SoundManager.skip).not.toHaveBeenCalled();
@@ -87,23 +94,29 @@ describe('AudioBridge - triggerAudio (Automatic)', () => {
                 blockedCategories: []
             }
         };
+        // Setup engine rules in state
+        gameState.audio.scoringRules = {
+            context: { scoreMade: {}, shotMissed: {}, periodEnd: {}, gameEnd: {}, foulPersonal: {}, timeout: {} },
+            recency: {},
+            intensity: {}
+        };
     });
 
-    it('should resolve the correct category based on score value', () => {
+    it('should resolve the correct category and use engine to addToQueue', () => {
         triggerAudio('score', { value: 1 });
-        expect(SoundManager.play).toHaveBeenCalledWith('errou', 5);
+        expect(SoundManager.addToQueue).toHaveBeenCalledWith('errou', expect.any(String), 5, expect.any(String));
 
         triggerAudio('score', { value: 2 });
-        expect(SoundManager.play).toHaveBeenCalledWith('nba', 5);
+        expect(SoundManager.addToQueue).toHaveBeenCalledWith('nba', expect.any(String), 5, expect.any(String));
     });
 
     it('should block automatic audio if allowAutomaticAudio is false', () => {
         gameState.audio.policies['match-screen'].allowAutomaticAudio = false;
         triggerAudio('score', { value: 3 });
-        expect(SoundManager.play).not.toHaveBeenCalled();
+        expect(SoundManager.addToQueue).not.toHaveBeenCalled();
     });
 
-    it('should resolve eventCategories for specialized events', () => {
+    it('should resolve eventCategories and use engine', () => {
         gameState.audio.policies['match-screen'].eventCategories = {
             'posse_24': 'posse',
             'foul': 'erro',
@@ -111,13 +124,13 @@ describe('AudioBridge - triggerAudio (Automatic)', () => {
         };
 
         triggerAudio('posse_24');
-        expect(SoundManager.play).toHaveBeenCalledWith('posse', 5);
+        expect(SoundManager.addToQueue).toHaveBeenCalledWith('posse', expect.any(String), 5, expect.any(String));
 
         triggerAudio('foul');
-        expect(SoundManager.play).toHaveBeenCalledWith('erro', 5);
+        expect(SoundManager.addToQueue).toHaveBeenCalledWith('erro', expect.any(String), 5, expect.any(String));
 
         triggerAudio('timeout');
-        expect(SoundManager.play).toHaveBeenCalledWith('torcida', 5);
+        expect(SoundManager.addToQueue).toHaveBeenCalledWith('torcida', expect.any(String), 5, expect.any(String));
     });
 
     it('should resolve countdown events correctly', () => {
@@ -127,19 +140,19 @@ describe('AudioBridge - triggerAudio (Automatic)', () => {
         };
 
         triggerAudio('countdown_1m');
-        expect(SoundManager.play).toHaveBeenCalledWith('musica', 5);
+        expect(SoundManager.addToQueue).toHaveBeenCalledWith('musica', expect.any(String), 5, expect.any(String));
 
         triggerAudio('countdown_10s');
-        expect(SoundManager.play).toHaveBeenCalledWith('nba', 5);
+        expect(SoundManager.addToQueue).toHaveBeenCalledWith('nba', expect.any(String), 5, expect.any(String));
     });
 
-    it('should use default fallback (buzina) for time events if no mapping exists', () => {
+    it('should use default fallback (buzina) for time events', () => {
         gameState.audio.policies['match-screen'].eventCategories = {};
         
         triggerAudio('period_end');
-        expect(SoundManager.play).toHaveBeenCalledWith('buzina', 5);
+        expect(SoundManager.addToQueue).toHaveBeenCalledWith('buzina', expect.any(String), 5, expect.any(String));
 
         triggerAudio('game_end');
-        expect(SoundManager.play).toHaveBeenCalledWith('buzina', 5);
+        expect(SoundManager.addToQueue).toHaveBeenCalledWith('buzina', expect.any(String), 5, expect.any(String));
     });
 });
